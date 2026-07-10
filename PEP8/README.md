@@ -9,3 +9,4 @@
 * [02_Imports_and_Dunders.md](02_Imports_and_Dunders.md)
 * [03_Whitespace.md](03_Whitespace.md)
 * [04_Trailing_Commas.md](04_Trailing_Commas.md)
+* [05_Comments.md](05_Comments.md)
