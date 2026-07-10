@@ -7,3 +7,4 @@
 
 * [01_Code_Layout.md](01_Code_Layout.md)
 * [02_Imports_and_Dunders.md](02_Imports_and_Dunders.md)
+* [03_Whitespace.md](03_Whitespace.md)
