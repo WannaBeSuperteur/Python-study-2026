@@ -10,3 +10,4 @@
 * [03_Whitespace.md](03_Whitespace.md)
 * [04_Trailing_Commas.md](04_Trailing_Commas.md)
 * [05_Comments.md](05_Comments.md)
+* [06_Naming_Conventions.md](06_Naming_Conventions.md)
