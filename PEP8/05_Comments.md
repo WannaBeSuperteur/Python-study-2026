@@ -26,3 +26,22 @@
   * **모든 public 모듈, 함수, 클래스, method** 에 작성하는 것이 좋음
   * Multi-line Docstring의 끝부분에 있는 ```"""``` 는 독립된 줄에 있어야 함
   * Single-line Docstring의 끝부분에 있는 ```"""``` 는 그 한 줄에 그대로 있어야 함 (독립된 줄이 아닌)
+
+```python
+# Not Good (only 1 space)
+
+x = x + 1 # compensate for border
+```
+
+```python
+# Not Good
+
+x = x + 1         # increment x
+```
+
+```python
+# Sometimes OK
+
+x = x + 1          # compensate for border
+```
+
