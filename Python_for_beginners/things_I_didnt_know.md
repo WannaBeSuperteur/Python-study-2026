@@ -16,6 +16,13 @@
 * [9. set 관련 사항](#9-set-관련-사항)
   * [9-1. set 의 교집합, 합집합, 차집합](#9-1-set-의-교집합-합집합-차집합)
   * [9-2. set, list의 membership test (존재 여부)](#9-2-set-list의-membership-test-존재-여부)
+* [10. 모듈 (module) 관련](#10-모듈-module-관련)
+* [11. string 모듈](#11-string-모듈)
+* [12. 날짜/시간 다루기](#12-날짜시간-다루기)
+* [13. 텍스트 파일 읽기/쓰기](#13-텍스트-파일-읽기쓰기)
+* [14. pickle, glob](#14-pickle-glob)
+  * [14-1. pickle](#14-1-pickle)
+  * [14-2. glob](#14-2-glob)
 
 ## 1. 리스트
 
@@ -267,3 +274,132 @@ dict_items([('qara', '2022.01 - 2023.12'), ('kaier', '2024.01 - 2025.01'), ('mot
 * 이유
   * list 의 membership test는 **list의 각 원소를 일일이 비교** 하기 때문에 $O(N)$ 의 시간이 소요된다.
   * set 의 membership test는 **해시 함수 (해시 테이블)** 방식을 이용하기 때문에 $O(1)$ 의 시간이 소요된다.
+
+## 10. 모듈 (module) 관련
+
+* 모듈 내에 있는 요소 (함수 등) 알아보기
+
+```python
+>>> import numpy as np
+>>> dir(np)
+['ALLOW_THREADS', 'AxisError', 'BUFSIZE', ..., 'who', 'zeros', 'zeros_like']
+```
+
+* 모듈 내에 있는 함수 사용법 알아보기
+
+```python
+>>> import math
+>>> help(math.sqrt)
+Help on built-in function sqrt in module math:
+
+sqrt(x, /)
+    Return the square root of x.
+```
+
+## 11. string 모듈
+
+```string``` 모듈에는 대문자 A-Z, 소문자 a-z, 숫자를 확인할 수 있는 함수가 있다.
+
+```python
+>>> import string
+>>> string.ascii_uppercase
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+>>> string.ascii_lowercase
+'abcdefghijklmnopqrstuvwxyz'
+>>> string.ascii_letters
+'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+>>> string.digits
+'0123456789'
+```
+
+## 12. 날짜/시간 다루기
+
+* 특정 날짜/시간 객체 생성
+
+```python
+>>> from datetime import datetime
+>>> test = datetime(2026, 1, 2, 12, 45)
+>>> test
+datetime.datetime(2026, 1, 2, 12, 45)
+>>> print(test)
+2026-01-02 12:45:00
+```
+
+* 두 날짜/시간의 차이 계산
+
+```python
+>>> probation_start = datetime(2026, 3, 23, 9, 30)
+>>> probation_finished = datetime(2026, 6, 22, 18, 30)
+>>> probation_period = probation_finished - probation_start
+>>> print(probation_period)
+91 days, 9:00:00
+```
+
+* 이외에도 날짜/시간 관련해서 다음과 같은 다양한 함수들이 있다.
+
+| 함수                                                               | 설명                                                       |
+|------------------------------------------------------------------|----------------------------------------------------------|
+| ```datetime.strptime(date_string, format)```                     | ```format```으로 된 ```date_string```을 날짜/시간 객체로 변환         |
+| ```datetime_object.strftime(format)```                           | ```datetime_object``` 날짜/시간 객체를 ```format``` 형태의 문자열로 변환 |
+| ```pytz.timezone('Asia/Seoul')``` + ```datetime.now(timezone)``` | ```Asia/Seoul``` timezone의 현재 시각 반환                      |
+| ```timedelta(days)```                                            | ```days``` 일만큼을 더한 날짜 반환                                 |
+
+## 13. 텍스트 파일 읽기/쓰기
+
+* ```file = open(...)``` + ```file.close()``` 보다 ```with open(...)``` 를 사용해야 하는 이유
+  * ```with open(...)``` 는 일종의 **컨텍스트 매니저** 역할로, 다음과 같은 효과가 있음
+    * ```with``` 문을 빠져나가는 순간 자동으로 파일이 close 되기 때문에, **예외 상황, ```file.close()``` 를 깜빡하는 상황에서 파일이 제대로 닫히지 않는 것을 방지** 가능
+    * 코드 가독성 향상
+* 파일 열기 모드
+  * write 는 **해당 내용으로 파일을 다시 쓰는 것** 이고, append 는 **해당 내용을 파일의 맨 끝부분에 추가하는 것** 이다. 
+  * **바이트 형식** 으로 쓴다는 것은, **바이너리 파일 (텍스트가 아닌, 이미지 등 형식의 파일)** 을 쓰기 위한 저장 모드를 의미한다.  
+
+| 파일 열기 모드                    | read | write          | append | 파일이 없을 때             |
+|-----------------------------|------|----------------|--------|----------------------|
+| ```open(file_path, 'r')```  | O    |                |        | FileNotFoundError 발생 |
+| ```open(file_path, 'r+')``` | O    | O              |        | FileNotFoundError 발생 |
+| ```open(file_path, 'w')```  |      | O              |        | 새로운 빈 파일 생성          |
+| ```open(file_path, 'wb')``` |      | O **(바이트 형식)** |        | 새로운 빈 파일 생성          |
+| ```open(file_path, 'w+')``` | O    | O              |        | 새로운 빈 파일 생성          |
+| ```open(file_path, 'a')```  |      |                | O      | 새로운 빈 파일 생성          |
+| ```open(file_path, 'a+')``` | O    |                | O      | 새로운 빈 파일 생성          |
+
+## 14. pickle, glob
+
+### 14-1. pickle
+
+pickle 은 dict 등 비교적 복잡한 자료형을 파일 형태로 읽고 쓰기 위한 라이브러리이다.
+
+```python
+>>> career = {'qara': '2022.01 - 2023.12', 'kaier': '2024.01 - 2025.01', 'motov': '2025.10 - 2026.01', 'artistcompany': '2026.03 -'}
+>>> import pickle
+>>> with open('career', 'wb') as f:
+	pickle.dump(career, f)
+
+	
+>>> import os
+>>> os.path.exists('career')
+True
+>>> with open('career', 'rb') as f:
+	print(pickle.load(f))
+
+	
+{'qara': '2022.01 - 2023.12', 'kaier': '2024.01 - 2025.01', 'motov': '2025.10 - 2026.01', 'artistcompany': '2026.03 -'}
+```
+
+### 14-2. glob
+
+glob 은 파일의 경로명을 이용하여 파일 리스트를 추출하는 데 주로 사용되는 라이브러리이다.
+
+```python
+>>> from glob import glob
+>>> glob('*.exe')
+['python.exe', 'pythonw.exe']
+>>> glob('*python*')
+['python.exe', 'python3.dll', 'python38.dll', 'pythonw.exe']
+>>> glob(r'C:\U*')
+['C:\\Users']
+```
+
+* 여기서 ```r```은 **원시 문자열 (raw)** 을 나타낸 것이다.
+  * 원시 문자열이란, escape 를 위한 백슬래시를 별도로 해석하지 않고 **그대로의 텍스트로 간주** 한다는 것이다.
