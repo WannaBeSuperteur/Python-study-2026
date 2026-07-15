@@ -4,4 +4,4 @@
 
 학습 내용
 
-[01. 파이썬 소개](01_Python_Instruction.md)
+* [01. 파이썬 소개](01_Python_Instruction.md)
