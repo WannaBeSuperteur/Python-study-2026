@@ -5,3 +5,4 @@
 학습 내용
 
 * [01. 파이썬 소개](01_Python_Instruction.md)
+* [02. 데이터로 작업하기](02_Work_with_Data.md)
