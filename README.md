@@ -5,10 +5,10 @@
   * 매번 쓰던 문법 및 본인에게 편한 코딩 스타일만 사용하여, Pythonic 한 코드를 짜는 데 어려움이 있다고 본인도 판단됨
   * 특히 2020-2021년 대학원 연구실, 2023-2024년 회사, 2025년 개인 프로젝트 등에서 **결과물의 완성에만 신경쓰고, 동료와의 협업을 위한 코드 품질에는 신경쓰지 못한 것이 패착** 
 * 학습 내용
-  * PEP8
-  * 왕초보를 위한 파이썬 (모르는 부분)
-  * 실용 파이썬 프로그래밍: 프로그래밍 유경험자를 위한 강좌
-  * 파이썬 클린 코드 (2nd Edition)
+  * [PEP8](PEP8)
+  * [왕초보를 위한 파이썬 (모르는 부분)](Python_for_beginners)
+  * [실용 파이썬 프로그래밍: 프로그래밍 유경험자를 위한 강좌](Practical_Python_programming)
+  * [파이썬 클린 코드 (2nd Edition)](Python_Clean_Code_2nd_Edition)
 * Progress: ⬜ (TO-DO), 💨 (ING), ✅ (DONE)
 
 | Date                   | Plan                                    | Progress |
