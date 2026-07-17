@@ -141,9 +141,15 @@ Traceback (most recent call last):
   File "<pyshell#37>", line 8, in __post_init__
     raise ValueError('이름은 빈 값이 될 수 없습니다.')
 ValueError: 이름은 빈 값이 될 수 없습니다.
+
 >>> artist_company = Company('아티스트컴퍼니(와이더플래닛)', is_startup=False, is_ai_related=True)
 >>> artist_company
 아티스트컴퍼니(와이더플래닛) 은(는) AI와 관련된 회사이며, 스타트업이 아닙니다.
+
+# Company2 에는 아직 __repr__ 메서드가 정의되어 있지 않음
+>>> artist_company = Company2('아티스트컴퍼니(와이더플래닛)', is_startup=False, is_ai_related=True)
+>>> print(artist_company)
+Company2(name='아티스트컴퍼니(와이더플래닛)', is_startup=False, is_ai_related=True)
 ```
 
 ## 5. 이터러블 객체 만들기
