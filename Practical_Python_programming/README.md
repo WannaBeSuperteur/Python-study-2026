@@ -13,3 +13,4 @@
 * [05. 파이썬 객체의 내부 작동](05_Internal_Working_of_Python_Object.md)
 * [06. 제너레이터](06_Generator.md)
 * [07. 고급 주제](07_Advanced_Topics.md)
+* [08. 테스팅과 디버깅](08_Testing_and_Debugging.md)
