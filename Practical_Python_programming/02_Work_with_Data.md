@@ -243,7 +243,7 @@ defaultdict(<class 'list'>, {'full-time': [('qara', 24), ('kaier', 13), ('motov'
 
 | Python                                 | 수학 (집합 표시 방법)                   |
 |----------------------------------------|---------------------------------|
-| ```v = [2 * x for x in s if x >= 0]``` | $v = \{2x \| x \in s, x \ge 0}$ |
+| ```v = [2 * x for x in s if x >= 0]``` | $v = \lbrace 2x \| x \in s, x \ge 0 \rbrace$ |
 
 ## 6. 객체와 복사
 
