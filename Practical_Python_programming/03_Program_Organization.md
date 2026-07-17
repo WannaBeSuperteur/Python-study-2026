@@ -35,9 +35,7 @@ check_validity()
 
 ```python
 def parse_name(x: str) -> list:
-   '''
-   return [성, 이름] from the name string 'x'.
-   '''
+   """return [성, 이름] from the name string 'x'."""
    ...
 ```
 
