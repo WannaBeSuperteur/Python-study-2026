@@ -5,10 +5,11 @@
   * 매번 쓰던 문법 및 본인에게 편한 코딩 스타일만 사용하여, Pythonic 한 코드를 짜는 데 어려움이 있다고 본인도 판단됨
   * 특히 2020-2021년 대학원 연구실, 2023-2024년 회사, 2025년 개인 프로젝트 등에서 **결과물의 완성에만 신경쓰고, 동료와의 협업을 위한 코드 품질에는 신경쓰지 못한 것이 패착** 
 * 학습 내용
-  * [PEP8](PEP8)
-  * [왕초보를 위한 파이썬 (모르는 부분)](Python_for_beginners)
-  * [실용 파이썬 프로그래밍: 프로그래밍 유경험자를 위한 강좌](Practical_Python_programming)
+  * [PEP8](PEP8) ([PEP8 documentation]((https://peps.python.org/pep-0008/)))
+  * [왕초보를 위한 파이썬 (모르는 부분)](Python_for_beginners) ([wikidocs](https://wikidocs.net/book/2))
+  * [실용 파이썬 프로그래밍: 프로그래밍 유경험자를 위한 강좌](Practical_Python_programming) ([wikidocs](https://wikidocs.net/book/4673))
   * [파이썬 클린 코드 (2nd Edition)](Python_Clean_Code_2nd_Edition)
+  * 파이써닉 파이썬 ([wikidocs](https://wikidocs.net/book/18371))
 * Progress: ⬜ (TO-DO), 💨 (ING), ✅ (DONE)
 
 | Date                   | Plan                                    | Progress |
@@ -26,3 +27,8 @@
 | 07.25 토 (1d)           | 파이썬 클린 코드 - 8. 단위 테스트와 리팩토링             | ⬜        |
 | 07.25 토 (1d)           | 파이썬 클린 코드 - 9. 일반적인 디자인 패턴              | ⬜        |
 | 07.26 일 (1d)           | 파이썬 클린 코드 - 10. 클린 아키텍쳐                 | ⬜        |
+| 07.26 일 (1d)           | 파이써닉 파이썬 - 1. 파이썬 기초 다지기                | ⬜        |
+| 07.27 월 - 07.28 화 (2d) | 파이써닉 파이썬 - 2. 파이썬답게 생각하기                | ⬜        |
+| 07.29 수 - 07.30 목 (2d) | 파이써닉 파이썬 - 3. 구조화와 재사용                  | ⬜        |
+| 07.31 금 - 08.01 토 (2d) | 파이써닉 파이썬 - 4. 리팩토링 실습                   | ⬜        |
+| 08.02 일 (1d)           | 파이써닉 파이썬 - 5. 실전 파이써닉 개발자 되기            | ⬜        |
