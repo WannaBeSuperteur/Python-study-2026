@@ -7,7 +7,11 @@
 * [3. 클래스의 속성 (attribute) 과 메서드 (method)](#3-클래스의-속성-attribute-과-메서드-method)
   * [3-1. 명령-쿼리 분리 원칙](#3-1-명령-쿼리-분리-원칙) 
 * [4. dataclasses 모듈을 이용하여 클래스 만들기](#4-dataclasses-모듈을-이용하여-클래스-만들기)
-* [5. 이터러블 객체 만들기](#5-이터러블-객체-만들기)
+* [5. 각종 객체 만들기](#5-각종-객체-만들기)
+  * [5-1. 이터러블 객체 만들기](#5-1-이터러블-객체-만들기)
+  * [5-2. 컨테이너 객체 만들기](#5-2-컨테이너-객체-만들기)
+  * [5-3. 객체의 속성이 동적일 때](#5-3-객체의-속성이-동적일-때)
+  * [5-4. 호출형 객체](#5-4-호출형-객체)
 
 ## 1. 컨텍스트 관리자 (Context Manager)
 
@@ -152,7 +156,16 @@ ValueError: 이름은 빈 값이 될 수 없습니다.
 Company2(name='아티스트컴퍼니(와이더플래닛)', is_startup=False, is_ai_related=True)
 ```
 
-## 5. 이터러블 객체 만들기
+## 5. 각종 객체 만들기
+
+| 구분                  | 관련 메서드                         |
+|---------------------|--------------------------------|
+| 이터러블 (iterable) 객체  | ```__iter__```, ```__next__``` |
+| 컨테이너 (container) 객체 | ```__contains__```             |
+| 객체의 속성을 동적으로 할 때    | ```__getattr__```              |
+| 호출형 객체              | ```__call__```                 |
+
+## 5-1. 이터러블 객체 만들기
 
 * 이터러블 (iterable) 객체를 만들기 위해서는 다음과 같이 ```__iter__(self)```, ```__next__(self)``` 메서드를 사용한다.
 
@@ -192,3 +205,96 @@ Traceback (most recent call last):
 StopIteration
 ```
 
+## 5-2. 컨테이너 객체 만들기
+
+* 컨테이너 (container) 객체는 ```__contains__``` 메서드가 포함된 객체로, 이 메서드는 ```in``` 키워드 호출 시의 boolean 값을 반환한다.
+
+```python
+>>> class Career():
+	def __init__(self, company_name: str, start_year: int, start_month: int, end_year: int, end_month: int):
+		self.company_name = company_name
+		self.start_year = start_year
+		self.start_month = start_month
+		self.end_year = end_year
+		self.end_month = end_month
+	def __contains__(self, year_and_month: dict):
+		year = year_and_month.get('year')
+		month = year_and_month.get('month')
+		if year < self.start_year:
+			return False
+		if year > self.end_year:
+			return False
+		if year == self.start_year and month < self.start_month:
+			return False
+		if year == self.end_year and month > self.end_month:
+			return False
+		return True
+
+	
+>>> motov = Career(company_name='motov', start_year=2025, start_month=10, end_year=2026, end_month=1)
+>>> {'year': 2024, 'month': 1} in motov
+False
+>>> {'year': 2025, 'month': 9} in motov
+False
+>>> {'year': 2025, 'month': 10} in motov
+True
+>>> {'year': 2026, 'month': 1} in motov
+True
+>>> {'year': 2026, 'month': 2} in motov
+False
+>>> {'year': 2026, 'month': 7} in motov
+False
+```
+
+* 코드 가독성을 향상시키기 위해, **Class 분리 + 협력 객체** 를 이용할 수도 있다.
+
+## 5-3. 객체의 속성이 동적일 때
+
+* 객체의 속성이 동적일 때는 ```__getattr__``` 메서드를 사용할 수 있다.
+
+```python
+>>> class Company():
+	def __init__(self, name: str, employee: int):
+		self.name = name
+		self.employee = employee
+	def __getattr__(self, attr):
+		if attr.endswith('_count'):
+			name = attr.replace('_count', '')
+			return f'appropriate attribute name: {name}'
+
+		
+>>> kaier = Company(name='kaier', employee=7)
+>>> kaier.name
+'kaier'
+>>> kaier.employee
+7
+>>> kaier.employee_count
+'appropriate attribute name: employee'
+```
+
+* ```__getattr__``` 메서드의 가능한 역할은 다음과 같다.
+  * 다른 객체에 대한 프록시 (proxy), 즉 **기존 객체의 메서드를 복사하는 대신, 내부적으로 같은 이름의 메서드 호출**
+  * 동적으로 계산되는 속성에 사용
+
+## 5-4. 호출형 객체
+
+호출형 객체는 **객체를 일반 함수처럼 호출 시 ```__call__``` 메서드를 호출** 하는 것을 말한다.
+
+```python
+>>> class Doubler():
+	def __init__(self, initial_value: int = 1):
+		self.value = initial_value
+	def __call__(self, double_count: int):
+		self.value *= (2 ** double_count)
+
+		
+>>> doubler = Doubler()
+>>> doubler.value
+1
+>>> doubler(3)
+>>> doubler.value
+8
+>>> doubler(5)
+>>> doubler.value
+256
+```
