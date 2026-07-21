@@ -12,6 +12,9 @@
   * [5-2. 컨테이너 객체 만들기](#5-2-컨테이너-객체-만들기)
   * [5-3. 객체의 속성이 동적일 때](#5-3-객체의-속성이-동적일-때)
   * [5-4. 호출형 객체](#5-4-호출형-객체)
+* [6. 함수 사용 시 유의할 점](#6-함수-사용-시-유의할-점)
+* [7. 내장 타입과 collections 모듈](#7-내장-타입과-collections-모듈)
+* [8. 비동기 코드](#8-비동기-코드)
 
 ## 1. 컨텍스트 관리자 (Context Manager)
 
@@ -297,4 +300,123 @@ False
 >>> doubler(5)
 >>> doubler.value
 256
+```
+
+## 6. 함수 사용 시 유의할 점
+
+* 함수 사용 시 다음 사항에 유의해야 한다.
+  * 함수의 인수에 대해 변경 가능한 default value (예: ```data: dict = {...}```) 를 사용하지 말 것
+  * 함수 인수를 **수정 가능한 객체 (dict 등)** 로 하고, 이 객체의 값을 **직접 수정** 한 것
+* 실제 동작
+
+```python
+>>> def error_test(test_dict: dict = {"name": "hskim"}):
+	print(f"[before] test_dict: {test_dict}")
+	name = test_dict.pop("name")
+	print(f"[after] test_dict: {test_dict}, name: {name}")
+	return name
+
+>>> error_test({"name": "Jaewook Kim"})
+[before] test_dict: {'name': 'Jaewook Kim'}
+[after] test_dict: {}, name: Jaewook Kim
+'Jaewook Kim'
+>>> error_test({"name": "Jiho Lee"})
+[before] test_dict: {'name': 'Jiho Lee'}
+[after] test_dict: {}, name: Jiho Lee
+'Jiho Lee'
+>>> error_test()
+[before] test_dict: {'name': 'hskim'}    # test_dict 에 {'name': 'hskim'} dict 생성 (딱 한번만 생성)
+[after] test_dict: {}, name: hskim       # test_dict 에서 pop
+'hskim'
+>>> error_test()
+[before] test_dict: {}                   # test_dict 는 이미 한번 생성되었고, pop 으로 인해 빈 상태가 됨
+Traceback (most recent call last):
+  File "<pyshell#8>", line 1, in <module>
+    error_test()
+  File "<pyshell#4>", line 3, in error_test
+    name = test_dict.pop("name")         # 오류 발생
+KeyError: 'name'
+```
+
+* 이 함수를 적절히 수정하려면, **기본값 (default value) 을 None으로 주고, 함수 내에서 할당** 해야 한다.
+
+```python
+>>> def error_test(test_dict: dict = None):
+	test_dict = test_dict or {"name": "hskim"}
+	print(f"[before] test_dict: {test_dict}")
+	name = test_dict.pop("name")
+	print(f"[after] test_dict: {test_dict}, name: {name}")
+	return name
+
+>>> error_test()
+[before] test_dict: {'name': 'hskim'}
+[after] test_dict: {}, name: hskim
+'hskim'
+>>> error_test()
+[before] test_dict: {'name': 'hskim'}
+[after] test_dict: {}, name: hskim
+'hskim'
+```
+
+## 7. 내장 타입과 collections 모듈
+
+* 내장 타입 (```list```, ```str```, ```dict``` 등) 의 확장을 위해서는 **```collections``` 모듈을 적절히 활용** 해야 한다.
+* 나쁜 코드 예시
+
+```python
+>>> class ImageList(list):
+	def __getitem__(self, idx):
+		image_info = super().__getitem__(idx)
+		image_name = image_info.get("name")
+		image_ai_prob = image_info.get("pred_prob")
+		return f"[name: {image_name}, predicted probability: {image_ai_prob}]"
+
+	
+>>> image_list = ImageList([{"name": "rose.png", "pred_prob": 0.725},
+			    {"name": "sunflower.png", "pred_prob": 0.91},
+			    {"name": "violeta.png", "pred_prob": 0.831}])
+>>> "|".join(image_list)
+Traceback (most recent call last):
+  File "<pyshell#23>", line 1, in <module>
+    "|".join(image_list)
+TypeError: sequence item 0: expected str instance, dict found
+```
+
+* 좋은 코드 예시
+
+```python
+>>> from collections import UserList
+>>> class ImageList(UserList):
+	def __getitem__(self, idx):
+		image_info = super().__getitem__(idx)
+		image_name = image_info.get("name")
+		image_ai_prob = image_info.get("pred_prob")
+		return f"[name: {image_name}, predicted probability: {image_ai_prob}]"
+
+	
+>>> image_list = ImageList([{"name": "rose.png", "pred_prob": 0.725},
+			    {"name": "sunflower.png", "pred_prob": 0.91},
+			    {"name": "violeta.png", "pred_prob": 0.831}])
+>>> "|".join(image_list)
+'[name: rose.png, predicted probability: 0.725]|[name: sunflower.png, predicted probability: 0.91]|[name: violeta.png, predicted probability: 0.831]'
+```
+
+## 8. 비동기 코드
+
+* **비동기 코드 (asynchronous code)** 는 보통 **코루틴 (coroutine)** 을 이용한다.
+* 코루틴의 일반적인 구조
+
+```python
+async def func_name(...):
+    ...
+    return result
+
+result = await func_name(...)  # func_name 함수 실행 종료 시까지 대기
+```
+
+* ```asyncio``` 라이브러리를 이용한 코루틴 호출
+
+```python
+import asyncio
+asyncio.run(func_name(...))  # func_name 함수를 실행하는 코루틴 실행
 ```
