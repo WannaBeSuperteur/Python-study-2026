@@ -7,3 +7,4 @@
 * [02. 파이썬스러운 (Pythonic) 코드](02_Pythonic_Code.md)
 * [03. 좋은 코드의 일반적인 특징](03_Good_Code_Characteristics.md)
 * [04. SOLID 원칙](04_SOLID_Rule.md)
+* [05. 파이썬의 데코레이터](05_Python_Decorator.md)
