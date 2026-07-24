@@ -4,7 +4,9 @@
 * [1. 파이썬의 데코레이터](#1-파이썬의-데코레이터)
 * [2. 파이썬 데코레이터의 종류](#2-파이썬-데코레이터의-종류)
 * [3. 고급 데코레이터](#3-고급-데코레이터)
-  * [3-1. 데코레이터 객체 예시](#3-1-데코레이터-객체-예시) 
+  * [3-1. 데코레이터 객체 예시](#3-1-데코레이터-객체-예시)
+  * [3-2. 기본값을 가진 데코레이터](#3-2-기본값을-가진-데코레이터)
+  * [3-3. 기타 참고 사항](#3-3-기타-참고-사항)
 
 ## 1. 파이썬의 데코레이터
 
@@ -137,3 +139,83 @@ test_func2 함수 실행 종료! 걸린 시간은 0.6348676000002342 / 0.45 초�
 목표 달성 실패 (차이: 0.18486760000023422 초)
 ```
 
+### 3-2. 기본값을 가진 데코레이터
+
+* 데코레이터에 괄호가 **없는** 경우의 첫 번째 파라미터는 **함수** 이다.
+* 데코레이터에 괄호가 **있는** 경우의 첫 번째 파라미터는 ```None``` 이다.
+
+```python
+>>> def execution_timer(func):
+	def wrapper(*args, **kwargs):
+		print(f'자, {func.__name__} 함수를 실행해 볼까요?')
+		start_at = perf_counter()
+		result = func(*args, **kwargs)
+		elapsed_time = perf_counter() - start_at
+		print(f'{func.__name__} 함수 실행 종료! 걸린 시간은 {elapsed_time} 초입니다.')
+		return result
+	return wrapper
+
+>>> @execution_timer
+def test_func3():
+	i = 0
+	while i < 20260725:
+		i += 1
+	return i
+
+>>> test_func3()
+자, test_func3 함수를 실행해 볼까요?
+test_func3 함수 실행 종료! 걸린 시간은 0.7295540000000074 초입니다.
+20260725
+>>> @execution_timer()
+def test_func4():
+	i = 0
+	while i < 20260725:
+		i += 1
+	return i
+
+Traceback (most recent call last):
+  File "<pyshell#44>", line 1, in <module>
+    @execution_timer()
+TypeError: execution_timer() missing 1 required positional argument: 'func'
+```
+
+* 데코레이터에 기본값이 있는 경우, **함수의 인자를 지정하지 않아도 호출 가능** 하다.
+
+```python
+>>> from functools import wraps
+>>> def test_decorator(func=None, *, probation: int, score: int):
+	def decorated(func):
+		@wraps(func)
+		def wrapped():
+			print('==== probation evaluation start ====')
+			result = func(probation, score)
+			print('==== probation evaluation end ====')
+			return result
+		return wrapped
+	return decorated
+
+>>> @test_decorator(probation=90, score=70)
+def evaluate_probation(probation, score):
+	print(f'수습 기간 경과일: {probation}, 수습 평가 점수: {score}')
+	if probation < 90:
+		print('수습 기간 종료 이전입니다.')
+	elif score >= 80:
+		print('수습 합격')
+	elif score >= 60:
+		print('수습 연장')
+	else:
+		print('수습 탈락')
+
+		
+>>> evaluate_probation()
+==== probation evaluation start ====
+수습 기간 경과일: 90, 수습 평가 점수: 70
+수습 연장
+==== probation evaluation end ====
+```
+
+### 3-3. 기타 참고 사항
+
+* 코루틴 함수에 대해 데코레이터를 만들 수 있다. 이때는 다음과 같이 한다.
+  * 함수를 ```def``` 대신 ```async def``` 로 정의한다.
+  * wrapping 된 부분에 대해서는 ```await``` 을 사용해야 한다.
