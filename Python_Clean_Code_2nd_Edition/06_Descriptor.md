@@ -4,6 +4,7 @@
 * [1. 디스크립터의 개요](#1-디스크립터의-개요)
   * [1-1. 디스크립터의 매직 메서드 설명](#1-1-디스크립터의-매직-메서드-설명)
   * [1-2. 디스크립터의 기본 예시](#1-2-디스크립터의-기본-예시)
+* [2. 디스크립터 예시](#2-디스크립터-예시)
 
 ## 1. 디스크립터의 개요
 
@@ -55,3 +56,128 @@
 {'self.__class__.__name__ (클래스 이름)': 'TestDescriptor', 'instance (인스턴스)': <__main__.TestClient object at 0x00000198047C19A0>, 'owner (디스크립터를 호출한 객체의 클래스)': <class '__main__.TestClient'>}
 <__main__.TestClient object at 0x00000198047C19A0>
 ```
+
+## 2. 디스크립터 예시
+
+* 아래 예시는 **hr 권한을 가진 사용자만 수습 평가 결과를 수정, 삭제할 수 있는** 예제이다.
+
+```python
+>>> class ProbationResult:
+	def __init__(self, required_perm=None):
+		self.required_perm = required_perm
+		self._name = None
+
+	def __get__(self, employee, owner):
+		print(f'__get__\n - employee={employee}\n - owner={owner}')
+		return employee.__dict__
+
+	def __set_name__(self, owner, name):
+		print(f'__set_name__\n - owner={owner}\n - name={name}')
+		self._name = name
+
+	def __set__(self, employee, value):
+		print(f'__set__\n - employee={employee}\n'
+		      + f' - value={value}\n'
+		      + f' - self._name={self._name}\n'
+		      + f' - employee.__dict__={employee.__dict__}')
+
+		if self.required_perm not in employee.permissions:
+			raise ValueError('permission denied (1)')
+		if value is None:
+			raise ValueError('Value is None.')
+
+		employee.__dict__[self._name] = value
+
+	def __delete__(self, employee):
+		print(f'__delete__\n - employee={employee}\n'
+		      + f' - self._name={self._name}\n'
+		      + f' - employee.__dict__={employee.__dict__}')
+
+		if self.required_perm not in employee.permissions:
+			raise ValueError('permission denied (2)')
+
+		employee.__dict__[self._name] = None
+
+		
+>>> class Employee:
+	probation_result = ProbationResult(required_perm="hr")
+
+	def __init__(self, name: str, permission_list: list):
+		self.name = name
+		self.permissions = permission_list or []
+	def __str__(self):
+		return f'이름: {self.name}'
+
+	
+__set_name__
+ - owner=<class '__main__.Employee'>
+ - name=probation_result
+```
+
+* hr 권한을 **가진** Employee 객체로 실행 시
+
+```python
+>>> hr_admin = Employee("hr", ["hr", "admin"])
+>>> hr_admin.probation_result = "김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)"
+__set__
+ - employee=이름: hr
+ - value=김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)
+ - self._name=probation_result
+ - employee.__dict__={'name': 'hr', 'permissions': ['hr', 'admin']}
+>>> hr_admin.probation_result
+__get__
+ - employee=이름: hr
+ - owner=<class '__main__.Employee'>
+{'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': '김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)'}
+>>> del hr_admin.probation_result
+__delete__
+ - employee=이름: hr
+ - self._name=probation_result
+ - employee.__dict__={'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': '김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)'}
+>>> hr_admin.probation_result
+__get__
+ - employee=이름: hr
+ - owner=<class '__main__.Employee'>
+{'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': None}
+```
+
+* hr 권한을 **가지지 않은** Employee 객체로 실행 시
+
+```python
+>>> user = Employee("hs.kim", ["ai_engineer"])
+>>> hr_admin.probation_result = "김홍식: 수습 탈락(39/100)"
+__set__
+ - employee=이름: hr
+ - value=김홍식: 수습 탈락(39/100)
+ - self._name=probation_result
+ - employee.__dict__={'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': None}
+>>> user.probation_result
+__get__
+ - employee=이름: hs.kim
+ - owner=<class '__main__.Employee'>
+{'name': 'hs.kim', 'permissions': ['ai_engineer']}
+>>> user.probation_result = "김홍식: 수습 통과(92/100)"
+__set__
+ - employee=이름: hs.kim
+ - value=김홍식: 수습 통과(92/100)
+ - self._name=probation_result
+ - employee.__dict__={'name': 'hs.kim', 'permissions': ['ai_engineer']}
+Traceback (most recent call last):
+  File "<pyshell#306>", line 1, in <module>
+    user.probation_result = "김홍식: 수습 통과(92/100)"
+  File "<pyshell#293>", line 21, in __set__
+    raise ValueError('permission denied (1)')
+ValueError: permission denied (1)
+>>> del user.probation_result
+__delete__
+ - employee=이름: hs.kim
+ - self._name=probation_result
+ - employee.__dict__={'name': 'hs.kim', 'permissions': ['ai_engineer']}
+Traceback (most recent call last):
+  File "<pyshell#307>", line 1, in <module>
+    del user.probation_result
+  File "<pyshell#293>", line 33, in __delete__
+    raise ValueError('permission denied (2)')
+ValueError: permission denied (2)
+```
+
