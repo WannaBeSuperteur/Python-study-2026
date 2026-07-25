@@ -219,3 +219,115 @@ def evaluate_probation(probation, score):
 * 코루틴 함수에 대해 데코레이터를 만들 수 있다. 이때는 다음과 같이 한다.
   * 함수를 ```def``` 대신 ```async def``` 로 정의한다.
   * wrapping 된 부분에 대해서는 ```await``` 을 사용해야 한다.
+
+## 4. 데코레이터를 사용하기 적합한 경우
+
+* 데코레이터를 사용하기에 적합한 경우는 다음과 같다.
+
+| 적합한 경우            | 설명                                                                                                   |
+|-------------------|------------------------------------------------------------------------------------------------------|
+| 파라미터 변환           | 파라미터 처리의 세부 로직을 숨기면서 함수의 서명을 변경하는 경우 (주의 필요)<br>- 기존의 복잡한 함수에 대해 **데코레이터를 이용하여 좋은 서명을 제공하는 경우** 에 적합 |
+| 코드 추적             | 함수 실행 경로의 로깅                                                                                         |
+| 파라미터 유효성 검사       | 파라미터 값, 데이터 타입 등의 유효성 검사 ('계약에 의한 디자인'과 관련)                                                          |
+| 재시도 (retry) 로직 구현 |                                                                                                      |
+| 반복 작업에 대한 클래스 단순화 | DRY 원칙 (중복 코드 금지) 관련                                                                                 |
+
+## 5. 데코레이터 사용 시의 실수
+
+데코레이터를 사용할 때 발생할 수 있는 실수는 다음과 같다.
+
+* 원본 함수의 일부 속성을 유지하지 않는 경우 (부작용 유발)
+  * 아래와 같이 하는 경우, **함수명과 docstring이 변경되는 부작용이 유발** 된다.
+  * 해결 방법은 **wrapped 함수에 ```@wraps``` 데코레이터를 적용** 하는 것이다.
+
+```python
+>>> def tracer(func):
+	def wrapped(*args, **kwargs):
+		result = func(*args, **kwargs)
+		print(f'{func.__qualname__} 실행 결과: {result}')
+		return result
+	return wrapped
+
+>>> @tracer
+def add(x, y):
+	"""Add x and y."""
+	result = x + y
+	print(f'x: {x}, y: {y}, x+y: {result}')
+	return result
+
+>>> help(add)
+Help on function wrapped in module __main__:
+
+wrapped(*args, **kwargs)
+
+>>> add.__qualname__
+'tracer.<locals>.wrapped'
+>>> add.__annotations__
+{}
+```
+
+```python
+# 해결 적용 후 (@wraps 데코레이터 적용 결과 -> 실제로는 func 함수를 wrapping 한 것임을 알려준다.)
+
+>>> def tracer(func):
+	@wraps(func)
+	def wrapped(*args, **kwargs):
+		result = func(*args, **kwargs)
+		print(f'{func.__qualname__} 실행 결과: {result}')
+		return result
+	return wrapped
+
+>>> @tracer
+def add(x, y):
+	"""Add x and y."""
+	result = x + y
+	print(f'x: {x}, y: {y}, x+y: {result}')
+	return result
+
+>>> help(add)
+Help on function add in module __main__:
+
+add(x, y)
+    Add x and y.
+
+>>> add.__qualname__
+'add'
+```
+
+* 함수를 import 만 했는데 데코레이터 함수가 실행되는 경우
+  * 이 경우는 **코드를 래핑된 함수 내부로 이동** 시키면 된다.
+  * [_05_example_2.py](_05_example_2.py) 실행 결과는 다음과 같다. (함수 정의: [_05_example_1.py](_05_example_1.py))
+
+```python
+# _05_example_2.py
+
+import time
+
+from _05_example_1 import fill_square_1
+# <function fill_square_1 at 0x000002479C74B5B0> 함수 실행 시작
+
+from _05_example_1 import fill_square_2
+
+
+if __name__ == '__main__':
+    print('main start', time.time())
+    time.sleep(3)
+    print(time.time())
+
+    fill_square_1(1000)
+    fill_square_2(1500)
+```
+
+```python
+# import 만 했는데 함수 실행이 시작됨
+<function fill_square_1 at 0x00000290741E9F30> 함수 실행 시작
+main start 1784940499.416715
+1784940502.4283757
+
+# start_at 이 이미 실행 시작되어, sleep time인 3초가 불필요하게 추가됨
+<function fill_square_1 at 0x00000290741E9F30> 함수 실행 결과: 1000000, 실행 시간: 3.1859989166259766 seconds
+
+# 래핑된 함수 내부로 코드를 이동 (fill_square_2 함수) 하면 간단히 해결됨
+<function fill_square_2 at 0x00000290741EA0E0> 함수 실행 시작
+<function fill_square_2 at 0x00000290741EA0E0> 함수 실행 결과: 2250000, 실행 시간: 0.34823036193847656 seconds
+```
