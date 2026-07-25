@@ -8,3 +8,4 @@
 * [03. 좋은 코드의 일반적인 특징](03_Good_Code_Characteristics.md)
 * [04. SOLID 원칙](04_SOLID_Rule.md)
 * [05. 파이썬의 데코레이터](05_Python_Decorator.md)
+* [06. 디스크립터로 멋진 객체 만들기](06_Descriptor.md)
