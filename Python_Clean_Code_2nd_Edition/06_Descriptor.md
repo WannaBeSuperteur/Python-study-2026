@@ -5,6 +5,7 @@
   * [1-1. 디스크립터의 매직 메서드 설명](#1-1-디스크립터의-매직-메서드-설명)
   * [1-2. 디스크립터의 기본 예시](#1-2-디스크립터의-기본-예시)
 * [2. 디스크립터 예시](#2-디스크립터-예시)
+* [3. 디스크립터의 유형](#3-디스크립터의-유형)
 
 ## 1. 디스크립터의 개요
 
@@ -118,22 +119,26 @@ __set_name__
 
 ```python
 >>> hr_admin = Employee("hr", ["hr", "admin"])
+
 >>> hr_admin.probation_result = "김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)"
 __set__
  - employee=이름: hr
  - value=김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)
  - self._name=probation_result
  - employee.__dict__={'name': 'hr', 'permissions': ['hr', 'admin']}
+
 >>> hr_admin.probation_result
 __get__
  - employee=이름: hr
  - owner=<class '__main__.Employee'>
 {'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': '김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)'}
+
 >>> del hr_admin.probation_result
 __delete__
  - employee=이름: hr
  - self._name=probation_result
  - employee.__dict__={'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': '김민우: 수습 탈락(59/100), 오로라: 수습 통과(80/100), 안지현: 수습 연장(66/100)'}
+
 >>> hr_admin.probation_result
 __get__
  - employee=이름: hr
@@ -145,17 +150,20 @@ __get__
 
 ```python
 >>> user = Employee("hs.kim", ["ai_engineer"])
+
 >>> hr_admin.probation_result = "김홍식: 수습 탈락(39/100)"
 __set__
  - employee=이름: hr
  - value=김홍식: 수습 탈락(39/100)
  - self._name=probation_result
  - employee.__dict__={'name': 'hr', 'permissions': ['hr', 'admin'], 'probation_result': None}
+
 >>> user.probation_result
 __get__
  - employee=이름: hs.kim
  - owner=<class '__main__.Employee'>
 {'name': 'hs.kim', 'permissions': ['ai_engineer']}
+
 >>> user.probation_result = "김홍식: 수습 통과(92/100)"
 __set__
  - employee=이름: hs.kim
@@ -168,6 +176,7 @@ Traceback (most recent call last):
   File "<pyshell#293>", line 21, in __set__
     raise ValueError('permission denied (1)')
 ValueError: permission denied (1)
+
 >>> del user.probation_result
 __delete__
  - employee=이름: hs.kim
@@ -179,5 +188,76 @@ Traceback (most recent call last):
   File "<pyshell#293>", line 33, in __delete__
     raise ValueError('permission denied (2)')
 ValueError: permission denied (2)
+```
+
+## 3. 디스크립터의 유형
+
+디스크립터의 유형은 크게 다음과 같이 2가지로 분류할 수 있다.
+
+| 유형                                | 설명                                               |
+|-----------------------------------|--------------------------------------------------|
+| 데이터 디스크립터 (data descriptor)       | ```__set__``` 또는 ```__delete__``` 메서드가 구현된 디스크립터 |
+| 비-데이터 디스크립터 (non-data descriptor) | ```__get__``` 메서드만을 구현한 디스크립터                    |
+
+* 참고로 ```__set_name__``` 메서드의 존재 여부는 이 분류와 무관하다.
+
+### 3-1. 디스크립터의 유형별 특징
+
+**데이터 디스크립터 (data descriptor)** 의 특징은 다음과 같다.
+
+* 데이터 디스크립터의 속성 조회 시, **객체의 ```__dict__``` 대신 클래스의 descriptor를 먼저 조회하여 그 결과를 반환** 한다.
+
+```python
+>>> class ExampleDataDescriptor:
+	def __get__(self, instance, owner):
+		print(f'__get__\n - instance={instance}\n'
+		      + f' - owner={owner}\n'
+		      + f' - instance.__dict__={instance.__dict__}')
+
+		if instance is None:
+			return self
+		return 'instance'
+
+	def __set__(self, instance, value):
+		print(f'__set__\n - instance={instance}\n'
+		      + f' - value={value}\n'
+		      + f' - instance.__dict__={instance.__dict__}')
+		
+		instance.__dict__["test"] = value
+		print(f'instance.__dict__={instance.__dict__}')
+
+		
+>>> class ClientClass:
+	data_descriptor = ExampleDataDescriptor()
+
+	
+>>> client = ClientClass()
+>>> client.data_descriptor
+__get__
+ - instance=<__main__.ClientClass object at 0x00000198047E1940>
+ - owner=<class '__main__.ClientClass'>
+ - instance.__dict__={}
+'instance'
+
+>>> client.data_descriptor = 'test'
+__set__
+ - instance=<__main__.ClientClass object at 0x00000198047E1940>
+ - value=test
+ - instance.__dict__={}
+instance.__dict__={'test': 'test'}
+
+>>> client.data_descriptor
+__get__
+ - instance=<__main__.ClientClass object at 0x00000198047E1940>
+ - owner=<class '__main__.ClientClass'>
+ - instance.__dict__={'test': 'test'}
+'instance'  # data_descriptor 속성 조회 시, 클래스의 descriptor 기준 __get__ 메서드 반환값인 'instance'를 반환
+
+>>> vars(client)
+{'test': 'test'}  # 객체의 dictionary 는 정상적으로 업데이트됨
+>>> client.__dict__
+{'test': 'test'}
+>>> client.__dict__['test']
+'test'
 ```
 
