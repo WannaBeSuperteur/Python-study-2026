@@ -10,6 +10,7 @@
   * [3-1. close 예시](#3-1-close-예시)
   * [3-2. throw 예시](#3-2-throw-예시)
   * [3-3. send 예시](#3-3-send-예시)
+  * [3-4. 추가 사항](#3-4-추가-사항)
 
 ## 기존 정리한 내용
 
@@ -303,3 +304,38 @@ current value: send_value=None, n=121
 61 는 122의 약수입니다.
 current value: send_value=None, n=122
 ```
+
+### 3-4. 추가 사항
+
+* ```yield from {iterable}``` 은 **이터러블에 속한 모든 값을 yield 하는** 구문이다.
+  * 많은 코루틴 사용 시 예외 처리, 서브 코루틴 등 구현이 복잡해지는데, ```yield from``` 을 통해 이를 해결할 수 있다.
+
+```python
+# 일반적인 yield 사용 시
+>>> def all_squares(n):
+	for i in range(1, n):
+		yield pow(i, 2)
+
+		
+>>> test = all_squares(10)
+>>> next(test)
+1
+>>> next(test)
+4
+>>> next(test)
+9
+
+# yield from 사용 시
+>>> def all_squares(n):
+	yield from (pow(i, 2) for i in range(1, n))
+
+	
+>>> test = all_squares(10)
+>>> next(test)
+1
+>>> next(test)
+4
+>>> next(test)
+9
+```
+
