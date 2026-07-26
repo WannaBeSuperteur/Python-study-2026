@@ -11,6 +11,7 @@
   * [3-2. throw 예시](#3-2-throw-예시)
   * [3-3. send 예시](#3-3-send-예시)
   * [3-4. 추가 사항](#3-4-추가-사항)
+* [4. 서브 제너레이터와 데이터 송수신](#4-서브-제너레이터와-데이터-송수신)
 
 ## 기존 정리한 내용
 
@@ -337,5 +338,90 @@ current value: send_value=None, n=122
 4
 >>> next(test)
 9
+```
+
+## 4. 서브 제너레이터와 데이터 송수신
+
+다음 예제에서 **```sequence``` 는 서브 제너레이터, ```main``` 은 메인 제너레이터** 이다.
+
+* 아래 예제에서 **서브 제너레이터가 아닌, 메인 제너레이터에만 값을 보냈다** 는 것이 중요하다.
+* 이는 **```sequence```에 데이터를 보내지 않았지만, 실질적으로 ```sequence```에 데이터를 전달한 셈** 이 되는 것을 의미한다.
+
+예제를 통해 다음을 알 수 있다.
+
+* **첫 번째 코루틴이 중지된** 동안에도, 데이터 전송 시 첫 번째 코루틴 인스턴스가 값을 받는다. (Exception throw 를 할 때도 동일)
+  * main 코루틴은 2개의 서로 다른 코루틴을 호출하는데, **특정 시점에서 둘 중 하나는 중지된 상태** 이다.
+
+```python 
+>>> class CustomException(Exception):
+	pass
+
+>>> def sequence(name, start, goal):
+	value = start
+	print(f'current value = {value}')
+	while (value % 1000 != goal):
+		try:
+			received = yield value
+			print(f'received: {received}')
+			value *= 2
+		except CustomException as e:
+			print(f'custom exception: {e}')
+			received = yield 1
+	return goal
+
+>>> def main():
+	step1 = yield from sequence("first 001 -> 024", 1, 24)
+	step2 = yield from sequence("second 024 -> 768", 24, 768)
+	return step1 + step2
+
+>>> generator = main()
+>>> next(generator)
+current value = 1  # step1 시작
+1
+>>> next(generator)
+received: None
+2
+>>> generator.send(64)  # 데이터를 전송한 경우 -> 인스턴스가 값을 받음
+received: 64
+4
+>>> generator.throw(CustomException)  # 예외를 전송한 경우 -> 인스턴스가 값을 받음
+custom exception: 
+1
+>>> next(generator)
+4
+>>> next(generator)
+received: None
+8
+>>> next(generator)
+received: None
+16
+
+...
+
+>>> next(generator)
+received: None
+256
+>>> next(generator)
+received: None
+512
+>>> next(generator)
+received: None
+current value = 24  # step2 시작
+24
+>>> next(generator)
+received: None
+48
+
+...
+
+>>> next(generator)
+received: None
+384
+>>> next(generator)
+received: None
+Traceback (most recent call last):
+  File "<pyshell#62>", line 1, in <module>
+    next(generator)
+StopIteration: 792  # 최종적으로 step1 = 768, step2 = 24 이므로 768 + 24 = 792 를 반환
 ```
 
