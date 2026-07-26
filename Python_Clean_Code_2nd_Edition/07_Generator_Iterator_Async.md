@@ -6,6 +6,10 @@
   * [1-2. 제너레이터 표현식](#1-2-제너레이터-표현식)
   * [1-3. 제너레이터를 이용한 중첩 루프의 처리](#1-3-제너레이터를-이용한-중첩-루프의-처리)
 * [2. 이터러블과 이터레이터](#2-이터러블과-이터레이터)
+* [3. 제너레이터를 코루틴으로 만들기](#3-제너레이터를-코루틴으로-만들기)
+  * [3-1. close 예시](#3-1-close-예시)
+  * [3-2. throw 예시](#3-2-throw-예시)
+  * [3-3. send 예시](#3-3-send-예시)
 
 ## 기존 정리한 내용
 
@@ -101,3 +105,136 @@ Lucky Number 7 index: 5
 * **이터레이터** 는 **이터러블에 대해 한 번에 하나씩 값을 '생산'** 하는 객체이다.
   * 내장된 ```next()``` 함수를 이용한다.
 * 따라서 **모든 제너레이터는 이터레이터** 라고 할 수 있다.
+
+## 3. 제너레이터를 코루틴으로 만들기
+
+제너레이터를 [코루틴 (Coroutine)](02_Pythonic_Code.md#8-비동기-코드) 으로 사용할 수 있다.
+
+* 관련 메서드 (제너레이터 인터페이스 메서드) 는 다음과 같다.
+
+| 메서드                                          | 설명                                                          |
+|----------------------------------------------|-------------------------------------------------------------|
+| ```close()```                                | 제너레이터에서 ```GeneratorExit``` 예외 발생 (따로 처리하지 않으면 제너레이터 반복 중지) |
+| ```throw(ex_type, ex_value, ex_traceback)``` | 제너레이터 중단 위치 (현재 위치) 에서 예외 발생                                |
+| ```send(value)```                            | ```next()``` 함수에 파라미터 (읽어올 데이터의 개수 등) 를 추가한 버전              |
+
+* 단, ```send()``` 메서드 호출을 위해서는 **```next()``` 를 반드시 먼저 호출** 해야 한다.
+
+### 3-1. close 예시
+
+```python
+>>> def close_test(start: int, end: int):
+	current_value = start
+	try:
+		while current_value <= end:
+			yield current_value
+			current_value += 1
+	except GeneratorExit:
+		print('Generator Exit')
+
+		
+>>> test = close_test(100, 500)
+>>> next(test)
+100
+>>> next(test)
+101
+>>> next(test)
+102
+>>> test.close()
+Generator Exit
+```
+
+### 3-2. throw 예시
+
+* CustomException 을 throw 한 결과, ```current_value``` 10 증가 처리된다.
+
+```python
+>>> class CustomException(Exception):
+	pass
+
+>>> def throw_test(start: int, end: int):
+	current_value = start
+	while True:
+		try:
+			while current_value <= end:
+				yield current_value
+				current_value += 1
+		except CustomException as e:
+			print('Custom Exception : increase 10')
+			current_value += 10
+		except Exception as e:
+			print(f'Exception : {e}')
+			current_value = end + 1
+			break
+
+		
+>>> test = throw_test(start=100, end=500)
+>>> next(test)
+100
+>>> next(test)
+101
+>>> test.throw(CustomException)
+Custom Exception : increase 10
+111
+>>> next(test)
+112
+
+>>> test.throw(RuntimeError)
+Exception : 
+Traceback (most recent call last):
+  File "<pyshell#25>", line 1, in <module>
+    test.throw(RuntimeError)
+StopIteration
+
+>>> next(test)
+Traceback (most recent call last):
+  File "<pyshell#26>", line 1, in <module>
+    next(test)
+StopIteration
+```
+
+### 3-3. send 예시
+
+```python
+>>> def send_test():
+	while True:
+		n = yield
+		for i in range(1, n):
+			if n % i == 0:
+				print(f'{i} 는 {n}의 약수입니다.')
+
+				
+>>> test = send_test()
+
+# 코루틴에서 send 메서드 호출 전에는 반드시 한번 next() 를 먼저 호출해야 함 !!
+>>> test.send(2026)
+Traceback (most recent call last):
+  File "<pyshell#45>", line 1, in <module>
+    test.send(2026)
+TypeError: can't send non-None value to a just-started generator
+
+>>> next(test)
+>>> test.send(2026)
+1 는 2026의 약수입니다.
+2 는 2026의 약수입니다.
+1013 는 2026의 약수입니다.
+>>> test.send(2028)
+1 는 2028의 약수입니다.
+2 는 2028의 약수입니다.
+3 는 2028의 약수입니다.
+4 는 2028의 약수입니다.
+6 는 2028의 약수입니다.
+12 는 2028의 약수입니다.
+13 는 2028의 약수입니다.
+26 는 2028의 약수입니다.
+39 는 2028의 약수입니다.
+52 는 2028의 약수입니다.
+78 는 2028의 약수입니다.
+156 는 2028의 약수입니다.
+169 는 2028의 약수입니다.
+338 는 2028의 약수입니다.
+507 는 2028의 약수입니다.
+676 는 2028의 약수입니다.
+1014 는 2028의 약수입니다.
+```
+
