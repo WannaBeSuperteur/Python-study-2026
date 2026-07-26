@@ -238,12 +238,18 @@ TypeError: can't send non-None value to a just-started generator
 1014 는 2028의 약수입니다.
 ```
 
+* 아래 예시에서 ```n = (yield send_value) or n + 1``` 은 다음 두 줄을 의미한다.
+  * ```input = (yield send_value)```
+  * ```n = input or n + 1```
+
 ```python
 >>> def send_test(start: int = 2):
 	send_value = None
 	n = start
 	while True:
 		print(f'current value: send_value={send_value}, n={n}')
+        
+        # input = (yield send_value); n = input or n + 1
 		n = (yield send_value) or n + 1
 		for i in range(1, n):
 			if n % i == 0:
