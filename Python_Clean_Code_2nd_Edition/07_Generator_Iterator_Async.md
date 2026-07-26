@@ -238,3 +238,62 @@ TypeError: can't send non-None value to a just-started generator
 1014 는 2028의 약수입니다.
 ```
 
+```python
+>>> def send_test(start: int = 2):
+	send_value = None
+	n = start
+	while True:
+		print(f'current value: send_value={send_value}, n={n}')
+		n = (yield send_value) or n + 1
+		for i in range(1, n):
+			if n % i == 0:
+				print(f'{i} 는 {n}의 약수입니다.')
+
+				
+>>> test = send_test()
+>>> next(test)
+current value: send_value=None, n=2
+>>> next(test)
+1 는 3의 약수입니다.
+current value: send_value=None, n=3
+
+>>> next()
+Traceback (most recent call last):
+  File "<pyshell#61>", line 1, in <module>
+    next()
+TypeError: next expected at least 1 argument, got 0
+
+>>> next(test)
+1 는 4의 약수입니다.
+2 는 4의 약수입니다.
+current value: send_value=None, n=4
+
+>>> test.send(120)
+1 는 120의 약수입니다.
+2 는 120의 약수입니다.
+3 는 120의 약수입니다.
+4 는 120의 약수입니다.
+5 는 120의 약수입니다.
+6 는 120의 약수입니다.
+8 는 120의 약수입니다.
+10 는 120의 약수입니다.
+12 는 120의 약수입니다.
+15 는 120의 약수입니다.
+20 는 120의 약수입니다.
+24 는 120의 약수입니다.
+30 는 120의 약수입니다.
+40 는 120의 약수입니다.
+60 는 120의 약수입니다.
+current value: send_value=None, n=120
+
+>>> next(test)
+1 는 121의 약수입니다.
+11 는 121의 약수입니다.
+current value: send_value=None, n=121
+
+>>> next(test)
+1 는 122의 약수입니다.
+2 는 122의 약수입니다.
+61 는 122의 약수입니다.
+current value: send_value=None, n=122
+```
