@@ -11,3 +11,4 @@
 * [06. 디스크립터로 멋진 객체 만들기](06_Descriptor.md)
 * [07. 제너레이터, 이터레이터, 비동기 프로그래밍](07_Generator_Iterator_Async.md)
 * [08. 단위 테스트와 리팩토링](08_Unit_Test_and_Refactoring.md)
+* [09. 일반적인 디자인 패턴](09_Design_Patterns.md)
