@@ -9,7 +9,8 @@
 * [5. 언패킹](#5-언패킹)
   * [5-1. 기본 언패킹](#5-1-기본-언패킹) 
   * [5-2. 별표 (*) 언패킹](#5-2-별표--언패킹) 
-* [6. 기타](#6-기타)
+* [6. 컨텍스트 매니저 관련](#6-컨텍스트-매니저-관련)
+* [7. 기타](#7-기타)
 
 ## 1. 파이썬의 기본 철학 및 핵심 격언
 
@@ -205,7 +206,26 @@ rainbow8 None
 ['kaier', 'motov', 'artistcompany', 'rainbow8']
 ```
 
-## 6. 기타
+## 6. 컨텍스트 매니저 관련
+
+* ```with open(...)``` 과 같이 **컨텍스트 매니저** 를 사용하면, 블록 종료 시 자동으로 ```close()``` 가 호출되므로 **예외 발생 시에도 안전하게 정리** 된다.
+* 컨텍스트 매니저 관련 라이브러리 ```contextlib``` 의 함수
+
+| 함수                         | 설명                                                     |
+|----------------------------|--------------------------------------------------------|
+| ```contextlib.suppress```  | ```with supress(OOOException):``` 과 같이 하여 **특정 예외 무시** |
+| ```contextlib.ExitStack``` | ```with``` 로 표현된 **여러 개의 자원을 한번에 관리**                  |
+
+```python
+>>> from contextlib import suppress
+>>> with suppress(ZeroDivisionError):
+	test = 1 / 0
+
+	
+>>> 
+```
+
+## 7. 기타
 
 * 가독성 향상을 위해 **조건을 집합처럼 사용** 하는 것이 좋다.
 
@@ -216,4 +236,20 @@ rainbow8 None
 
 	
 accuracy is a valid metric.
+```
+
+* 위치 전용 인자
+  * 함수 정의 시 ```def func(a: int, /, ...)``` 와 같이 하면 ```a```는 **키워드로 넣으면 안 되고, 위치로만 넣어야** 한다.
+
+```python
+>>> def square(num: int, /):
+	return num * num
+
+>>> square(5)
+25
+>>> square(num=5)
+Traceback (most recent call last):
+  File "<pyshell#249>", line 1, in <module>
+    square(num=5)
+TypeError: square() got some positional-only arguments passed as keyword arguments: 'num'
 ```
