@@ -10,7 +10,11 @@
   * [5-1. 기본 언패킹](#5-1-기본-언패킹) 
   * [5-2. 별표 (*) 언패킹](#5-2-별표--언패킹) 
 * [6. 컨텍스트 매니저 관련](#6-컨텍스트-매니저-관련)
-* [7. 기타](#7-기타)
+* [7. 함수형 도구 (map, filter, reduce) 및 람다 함수](#7-함수형-도구-map-filter-reduce-및-람다-함수)
+  * [7-1. 함수형 도구](#7-1-함수형-도구)
+  * [7-2. 람다 함수](#7-2-람다-함수)
+  * [7-3. itemgetter 사용법](#7-3-itemgetter-사용법)
+* [8. 기타](#8-기타)
 
 ## 1. 파이썬의 기본 철학 및 핵심 격언
 
@@ -225,7 +229,68 @@ rainbow8 None
 >>> 
 ```
 
-## 7. 기타
+## 7. 함수형 도구 (map, filter, reduce) 및 람다 함수
+
+### 7-1. 함수형 도구
+
+Python의 [```map```](../Python_for_beginners/things_I_didnt_know.md#5-1-map-함수) , ```filter```, [```reduce```](../Python_for_beginners/things_I_didnt_know.md#5-2-reduce-함수) 와 같은 도구를 **함수형 도구** 라고 한다.
+
+* 함수형 도구를 쓸지, 컴프리헨션을 쓸지는 **상황에 따라 적절히 (알잘딱깔센하게)** 하면 된다.
+  * 간단한 변환은 ```map```, 복잡한 조건 등은 ```컴프리헨션``` 을 사용하면 좋다. 
+  * 간단한 조건문의 경우 ```컴프리헨션``` 을 사용하는 것이 좋다.
+* ```reduce(func, iterable, init)``` 에서 **초기값으로 ```init``` 을 준다.**
+* 참고: ```sum``` 과 ```math.prod``` 의 ```reduce``` 를 이용한 표현
+
+| 함수                    | ```reduce``` 를 이용한 표현                         |
+|-----------------------|-----------------------------------------------|
+| ```sum(nums)```       | ```reduce(lambda acc, x: acc + x, nums, 0)``` |
+| ```math.prod(nums)``` | ```reduce(lambda acc, x: acc * x, nums, 1)``` |
+
+* 함수형 도구를 단계별로 연결한 것을 **파이프라인** 이라고 한다.
+  * 예시: ```list(map(...))```, ```list(filter(..., map(...)))```
+  * 파이프라인은 **여러 단계일 때**, 컴프리헨션은 **간단한 조건/변환** 일 때 사용하면 좋다.
+
+### 7-2. 람다 함수
+
+* 람다 함수와 ```def``` 를 사용한 함수의 사용 기준은 다음과 같다.
+
+| 구분                   | 사용 기준                                         |
+|----------------------|-----------------------------------------------|
+| ```lambda``` (람다 함수) | - 로직이 간결함 (정렬 key, map, filter 등)<br>- 1회용 사용 |
+| ```def```            | - 로직이 복잡함<br>- 여러 번 반복 호출하여 사용                |
+
+### 7-3. itemgetter 사용법
+
+* **itemgetter** (```operator.itemgetter```) 는 **딕셔너리, 튜플 등에서 key 등을 빠르게 추출** 할 때 사용하는 도구이다.
+* ```lambda x: x[key]``` 보다 ```itemgetter[key]``` 가 **더 간단하고 빠르다.**
+
+```python
+>>> values = [{'value': random.randint(1, 100_000_000)} for _ in range(3_000_000)]
+>>> def test_lambda():
+	start = time.time()
+	sorted(values, key=lambda d: d['value'])
+	elapsed_time = time.time() - start
+	print(f'elapsed time: {elapsed_time}')
+
+	
+>>> def test_itemgetter():
+	start = time.time()
+	sorted(values, key=itemgetter('value'))
+	elapsed_time = time.time() - start
+	print(f'elapsed time: {elapsed_time}')
+
+	
+>>> test_lambda()
+elapsed time: 1.574216365814209
+>>> test_itemgetter()
+elapsed time: 1.3772649765014648
+>>> test_lambda()
+elapsed time: 1.4703822135925293
+>>> test_itemgetter()
+elapsed time: 1.3884758949279785
+```
+
+## 8. 기타
 
 * 가독성 향상을 위해 **조건을 집합처럼 사용** 하는 것이 좋다.
 
