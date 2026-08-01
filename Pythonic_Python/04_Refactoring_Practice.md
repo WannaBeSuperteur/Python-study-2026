@@ -4,6 +4,7 @@
 * [1. 컴프리헨션/제너레이터 표현식 적용 리팩토링](#1-컴프리헨션제너레이터-표현식-적용-리팩토링)
   * [1-1. 중첩 컴프리헨션](#1-1-중첩-컴프리헨션)
 * [2. 튜플 언패킹](#2-튜플-언패킹)
+* [3. 중복된 로직의 제거](#3-중복된-로직의-제거)
 
 ## 1. 컴프리헨션/제너레이터 표현식 적용 리팩토링
 
@@ -122,3 +123,60 @@ motov (3 개월 재직)
 artistcompany (6 개월 재직)
 rainbow8 (2 개월 재직)
 ```
+
+## 3. 중복된 로직의 제거
+
+* 중복되는 로직 (공통부분) 의 경우 **따로 함수로 추출** 해야 한다.
+  * 전처리, 검증 등
+* 고차 함수 (HOF) 를 이용한 전략 주입
+  * 로직의 공통되는 부분을 한 곳으로 모으고, **차이가 있는 부분을 따로 정책 함수로 주입** 한다.
+  * ```partial``` 을 활용하면 **인자를 미리 고정한 '준비된 함수'** 를 생성할 수 있다.
+
+```python
+# NOT Pythonic
+
+>>> def compute_formula_1(x: float, y: float) -> float:
+	return x + y * (y + 1.0) * (y + 2.0) / 6.0
+
+>>> def compute_formula_2(x: float, y: float) -> float:
+	return x + y * (y + 4.0) * (y - 5.0) / 6.0
+
+>>> print(compute_formula_1(4.5, 3))
+14.5
+>>> print(compute_formula_2(5, 4))
+-0.33333333333333304
+```
+
+```python
+# Pythonic !!
+
+>>> from typing import Callable
+>>> from functools import partial
+
+# 정책 함수 정의
+>>> PolicyFunction = Callable[[float], float]
+
+# 공통 계산 로직을 모으고, 차이가 있는 부분만 convert 함수를 사용 (고차 함수)
+>>> def compute_formula(x: float, y: float, convert: PolicyFunction) -> float:
+	return x + y * convert(y) / 6.0
+
+>>> def convert(a: float, b: float) -> PolicyFunction:
+	return lambda y: (y + a) * (y + b)
+
+# 정책 함수 convert 의 구체적 구현
+# convert_formula_1: lambda y: (y + 1.0) * (y + 2.0)
+# convert_formula_2: lambda y: (y + 4.0) * (y - 5.0)
+>>> convert_formula_1 = convert(a=1.0, b=2.0)
+>>> convert_formula_2 = convert(a=4.0, b=-5.0)
+
+# partial 을 이용해 인자를 미리 고정한 "준비된 함수" 생성
+>>> compute_formula_1_new = partial(compute_formula, convert=convert_formula_1)
+>>> compute_formula_2_new = partial(compute_formula, convert=convert_formula_2)
+
+# 함수 실행 (리팩토링 이전과 결과 동일)
+>>> print(compute_formula_1_new(4.5, 3))
+14.5
+>>> print(compute_formula_2_new(5, 4))
+-0.33333333333333304
+```
+
