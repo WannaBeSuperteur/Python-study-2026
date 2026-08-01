@@ -4,3 +4,4 @@
 
 학습 내용
 
+* [Part 1. 파이썬 기초 다지기](01_Python_Basics.md)
