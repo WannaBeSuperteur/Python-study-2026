@@ -6,6 +6,7 @@
   * [1-2. 튜플 관련 함수](#1-2-튜플-관련-함수)
   * [1-3. 딕셔너리의 특징 및 관련 함수](#1-3-딕셔너리의-특징-및-관련-함수)
   * [1-4. 세트 (set) 관련 함수](#1-4-세트-set-관련-함수)
+* [2. 조건문, 반복문 관련](#2-조건문-반복문-관련)
 
 ## 1. 리스트, 튜플, 딕셔너리, 세트
 
@@ -140,4 +141,41 @@ frozenset({2, 2014, 6})
 >>> test_dict = {test: 'Frozen (Elsa)'}
 >>> test_dict
 {frozenset({2, 2014, 6}): 'Frozen (Elsa)'}
+```
+
+## 2. 조건문, 반복문 관련
+
+* ```enumerate``` 함수에서 ```start=n``` 으로 하면 인덱스의 값을 ```n```부터 시작할 수 있다.
+
+```python
+>>> companies = ['qara', 'kaier', 'motov', 'artistcompany', 'rainbow8']
+>>> for i, company in enumerate(companies, start=1):
+	print(f"{i} 번째 회사: {company}")
+
+	
+1 번째 회사: qara
+2 번째 회사: kaier
+3 번째 회사: motov
+4 번째 회사: artistcompany
+5 번째 회사: rainbow8
+```
+
+* ```if-elif-else``` 구문으로 연산을 분기할 때, **딕셔너리 매핑 (dictionary dispatch)** 을 사용하면 이를 pythonic 하게 만들 수 있다.
+
+```python
+>>> operations = {
+	"mean": lambda x: sum(x) / len(x) if x else 'x is empty',
+	"max_min_diff": lambda x: max(x) - min(x),
+	"max_min_div": lambda x: max(x) / min(x) if min(x) > 0 else 'min of x is 0 or below'
+}
+```
+
+```python
+>>> x = [100, 45, 20, 75, 70, 90]
+>>> print(operations["mean"](x))
+66.66666666666667
+>>> print(operations["max_min_diff"](x))
+80
+>>> print(operations["max_min_div"](x))
+5.0
 ```
