@@ -13,6 +13,11 @@
   * [5-1. Fixture (픽스처)](#5-1-fixture-픽스처)
   * [5-2. 케이스 표 + subTest](#5-2-케이스-표--subtest)
   * [5-3. 단언 (Assertion) 관련 메서드](#5-3-단언-assertion-관련-메서드)
+* [6. 타입 힌트와 정적 분석](#6-타입-힌트와-정적-분석)
+  * [6-1. Optional, Union 타입](#6-1-optional-union-타입)
+  * [6-2. Literal, TypedDict](#6-2-literal-typeddict)
+  * [6-3. 제네릭 (Generics)](#6-3-제네릭-generics)
+  * [6-4. 기타](#6-4-기타)
 
 ## 1. 데이터 클래스 (dataclass) 관련
 
@@ -351,3 +356,71 @@ FAILED (failures=1, errors=1)
 | ```assertRaises(Exception)``` | 예외/오류 ```Exception``` 발생 여부 판단                                   |
 
 * ```assertAlmostEqual(a, b)``` 대신 ```assertTrue(math.isclise(...))``` 를 사용할 수 있다.
+
+## 6. 타입 힌트와 정적 분석
+
+### 6-1. Optional, Union 타입
+
+| 구분       | 설명                    | 표현                                                |
+|----------|-----------------------|---------------------------------------------------|
+| Optional | 값이 있을 수도 있고, 없을 수도 있음 | ```Optional[type]``` 또는 ```type \| None```        |
+| Union    | 여러 type 중 하나에 해당하는 값  | ```Union[type1, type2]``` 또는 ```type1 \| type2``` |
+
+* **타입 내로잉 (Type Narrowing)** 은 Optional 또는 Union으로 정의된 값에 대해 **```if```, ```isinstance()``` 등으로 실제 타입을 확인 후 사용** 하는 것이다.
+
+### 6-2. Literal, TypedDict
+
+| 구분        | 설명                                                                        | 표현                                 |
+|-----------|---------------------------------------------------------------------------|------------------------------------|
+| Literal   | 변수에 허용된 값의 종류를 제한<br>- 즉, **허용된 값 범위를 강제**                                | ```Literal[value1, value2, ...]``` |
+| TypedDict | **꼭 있어야 하는 key 및 해당 key의 값의 type** 을 미리 정의<br>- 이를 통해 **딕셔너리의 안전한 사용 보장** | ```class OOODict(TypedDict)```     |
+
+```python
+>>> from typing import TypedDict, Literal
+>>> EmployeeStatus = Literal["수습기간", "수습연장", "정규직", "계약직"]
+>>> class Employee(TypedDict):
+	employee_id: int
+	name: str
+	status: EmployeeStatus
+
+	
+>>> hskim: Employee = {'employee_id': 1, 'name': 'hskim', 'status': '정규직'}
+>>> print(hskim)
+{'employee_id': 1, 'name': 'hskim', 'status': '정규직'}
+```
+
+### 6-3. 제네릭 (Generics)
+
+**제네릭 (Generics)** 은 **하나의 틀에 여러 타입을 적용** 하기 위한 방법이다.
+
+* 즉, **타입 정보를 유지하면서 재사용 가능** 하게 한다.
+* **오버로드 (overload)** 는 함수가 **입력값에 따라 반환값의 타입이 서로 다른** 것을 말한다.
+
+제네릭의 유용성은 다음과 같다.
+
+* 상황에 따라 함수 반환값의 타입이 달라지는 부분을, 타입 검사 도구가 미리 찾아서 잡아준다.
+* 협업 시, **함수 입력값에 따라 반환 타입이 명확해진다. (문서화 역할)**
+
+```python
+>>> from typing import TypeVar
+>>> T = TypeVar('T', int, float)
+>>> def is_probation_passed(score: T) -> bool:
+	print(f'probation score: {score} / 100')
+	return score >= 75
+
+>>> print(is_probation_passed(80))
+probation score: 80 / 100
+True
+>>> print(is_probation_passed(80.0))
+probation score: 80.0 / 100
+True
+```
+
+### 6-4. 기타
+
+* **프로토콜 (Protocol)** 은 어떤 클래스가 **특정 메서드/속성을 가지면 된다** 는 인터페이스 개념으로, **필요한 메서드가 있으면 통과** 를 의미한다.
+  * 즉, **형식보다는 기능에 초점** 을 둔다.
+  * 같은 메서드를 갖는 여러 클래스가 **계층 구조가 서로 다를 수 있기 때문에** 중요하다.
+* **완전성 검사** 는 조건문 등에서 **모든 경우를 빠짐없이 처리했는지 확인** 하는 것을 말한다.
+  * 실수로 빠뜨린 경우를 ```mypy``` 라는 검사 도구를 통해 알 수 있다.
+
