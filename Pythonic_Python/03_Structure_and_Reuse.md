@@ -8,6 +8,7 @@
 * [2. namedtuple](#2-namedtuple)
   * [2-1. 데이터 클래스와의 공통점/차이점](#2-1-데이터-클래스와의-공통점차이점)
 * [3. 모듈/패키지 구조 설계](#3-모듈패키지-구조-설계)
+* [4. 예외 처리 관련](#4-예외-처리-관련)
 
 ## 1. 데이터 클래스 (dataclass) 관련
 
@@ -150,3 +151,52 @@ AttributeError: can't set attribute
  
 * 기타
   * ```__init__.py``` 에는 실행 코드를 넣지 않는다. **(부수 효과 예측 어려움)**
+
+## 4. 예외 처리 관련
+
+* Python에서 [EAFP](../Python_Clean_Code_2nd_Edition/03_Good_Code_Characteristics.md#4-개발-지침-약어-및-설명) 를 선호하는 이유
+  * 가독성 향상
+  * 흐름 단순화 (조건문 중첩 대신 예외 처리)
+  * 실제 표준 라이브러리 코드의 트렌드도 EAFP 임
+* **예외 계층** ([참고](../Practical_Python_programming/04_Class_and_Object.md#5-커스텀-예외-정의하기)) 이 필요한 이유
+  * 프로그램 크기 증가에 따른 **다양한 오류 상황**
+  * 모든 예외를 **한번에 관리하기 어려움**
+* 예외 변환 (Exception Translation)
+  * **예외 변환** 은 저수준 예외를 **의미 있는 커스텀 예외로 변환** 하는 것이다.
+    * 이를 통해 **어떤 일이 있었는지 쉽게 추적** 할 수 있다.
+  * ```raise NewException from e``` 를 통해, 원래 예외 ```e``` 를 원인으로 한 새로운 예외 ```NewException``` 로 던진다.
+
+```python
+>>> class CustomError(Exception):
+	def __init__(self, msg: str, expression: str):
+		super().__init__(f"error: {msg} (수식: {expression})")
+
+		
+>>> def div(a: int, b: int) -> float:
+	try:
+		return a / b
+	except ZeroDivisionError as e:
+		raise CustomError(str(e), f'{a} / {b}')
+
+	
+>>> div(15, 5 - (3 + 2))
+Traceback (most recent call last):
+  File "<pyshell#76>", line 3, in div
+    return a / b
+ZeroDivisionError: division by zero
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<pyshell#77>", line 1, in <module>
+    div(15, 5 - (3 + 2))
+  File "<pyshell#76>", line 5, in div
+    raise CustomError(str(e), f'{a} / {b}')
+CustomError: error: division by zero (수식: 15 / 0)
+```
+
+* [커스텀 예외](../Practical_Python_programming/04_Class_and_Object.md#5-커스텀-예외-정의하기) 에는 **맥락 정보 (이유 등)** 를 담는 것이 좋다. 그 이유는 다음과 같다.
+  * 사용자 친화적 오류 피드백을 통한 **편리한 디버깅**
+  * **오류 로그 가독성** 향상
+* 예외는 **프로그램의 흐름을 안전하고 예측 가능하게 만드는 도구** 이므로 중요하다.
+
