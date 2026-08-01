@@ -3,6 +3,13 @@
 * [1. 파이썬의 기본 철학 및 핵심 격언](#1-파이썬의-기본-철학-및-핵심-격언)
 * [2. 컴프리헨션 (Comprehension)](#2-컴프리헨션-comprehension)
   * [2-1. 제너레이터 표현식 사용](#2-1-제너레이터-표현식-사용)
+  * [2-2. 리스트 컴프리헨션 vs. 제너레이터 표현식](#2-2-리스트-컴프리헨션-vs-제너레이터-표현식)
+* [3. any(), all() 함수 (조건문 중첩 대신)](#3-any-all-함수-조건문-중첩-대신)
+* [4. zip(seq1, seq2, ...) 관련](#4-zipseq1-seq2--관련)
+* [5. 언패킹](#5-언패킹)
+  * [5-1. 기본 언패킹](#5-1-기본-언패킹) 
+  * [5-2. 별표 (*) 언패킹](#5-2-별표--언패킹) 
+* [6. 기타](#6-기타)
 
 ## 1. 파이썬의 기본 철학 및 핵심 격언
 
@@ -124,7 +131,81 @@ False
 True
 ```
 
-## 4. 기타
+## 4. zip(seq1, seq2, ...) 관련
+
+```itertools.zip_longest``` 는 **길이가 서로 다른 iterable을 끝까지 처리** 하기 위한 방법이다.
+
+| 구분  | 설명                                                                                                                                                         |
+|-----|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 사용법 | ```zip_longest(iter1, iter2, ..., fillvalue=fillvalue)```                                                                                                  |
+| 기능  | ```iter1```, ```iter2``` 중 **가장 긴 (원소 개수가 가장 많은) iterable** 에 맞춰서, 나머지 iterable에 해당하는 부분을 ```fillvalue``` 로 채운다.<br>- ```fillvalue``` 의 기본값은 ```None```이다. |
+
+```python
+>>> companies = ['qara', 'kaier', 'motov', 'artistcompany', 'rainbow8']
+>>> months = [24, 12, 3]
+>>> for c, m in zip(companies, months):
+	print(c, m)
+
+	
+qara 24
+kaier 12
+motov 3
+```
+
+```python
+>>> for c, m in zip_longest(companies, months):
+	print(c, m)
+
+	
+qara 24
+kaier 12
+motov 3
+artistcompany None
+rainbow8 None
+```
+
+## 5. 언패킹
+
+* iterable 데이터를 풀 때는 **언패킹을 이용하는 것이 파이써닉** 하다.
+
+### 5-1. 기본 언패킹
+
+```python
+# NOT pythonic
+
+>>> companies = ['qara', 'kaier', 'motov', 'artistcompany', 'rainbow8']
+>>> first_company = companies[0]
+>>> second_company = companies[1]
+>>> first_company
+'qara'
+>>> second_company
+'kaier'
+```
+
+```python
+# Pythonic !!
+
+>>> first_company, second_company = companies[:2]
+>>> first_company
+'qara'
+>>> second_company
+'kaier'
+```
+
+### 5-2. 별표 (*) 언패킹
+
+* 별표 ```*``` 를 이용하여 **나머지 전부를 언패킹** 할 수 있다.
+
+```python
+>>> companies = ['qara', 'kaier', 'motov', 'artistcompany', 'rainbow8']
+>>> first, *rest = companies
+>>> first
+'qara'
+>>> rest
+['kaier', 'motov', 'artistcompany', 'rainbow8']
+```
+
+## 6. 기타
 
 * 가독성 향상을 위해 **조건을 집합처럼 사용** 하는 것이 좋다.
 
@@ -136,4 +217,3 @@ True
 	
 accuracy is a valid metric.
 ```
-
