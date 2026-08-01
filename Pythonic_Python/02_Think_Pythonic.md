@@ -74,3 +74,66 @@ False
 >>> any([p % 2 == 1 for p in primes])
 True
 ```
+
+### 2-2. 리스트 컴프리헨션 vs. 제너레이터 표현식
+
+| 구분     | 리스트 컴프리헨션              | 제너레이터 표현식            |
+|--------|------------------------|----------------------|
+| 메모리 저장 | 처음부터 **모든 값을 메모리에 저장** | 값을 **필요할 때 즉석에서 생성** |
+| 메모리 절약 | X                      | O                    |
+
+* 제너레이터는 **대규모 데이터, 반복이 중간에 멈추기 쉬운 경우** 등에 사용하는 것이 좋다.
+
+## 3. any(), all() 함수 (조건문 중첩 대신)
+
+* 함수 설명
+
+| 함수 및 기타 사용법                 | 설명                                                         |
+|-----------------------------|------------------------------------------------------------|
+| ```any(iterable)```         | ```iterable``` 의 논리식 중 1개라도 True이면 ```True```를 반환 **(OR)** |
+| ```all(iterable)```         | ```iterable``` 의 논리식이 모두 True이면 ```True```를 반환 **(AND)**   |
+| ```A if condition else B``` | 삼항 연산자 **보다 Pythonic 한 표현**                                |
+
+```python
+>>> def get_probation_result(performance: int, competency: int, attitude: int) -> bool:
+	avg = (performance + competency + attitude) / 3
+	if avg < 60:
+		return False
+	elif attitude < 40:
+		return False
+	elif competency < 60 and attitude < 60:
+		return False
+	else:
+		return True
+
+	
+>>> def get_probation_result_new(performance: int, competency: int, attitude: int) -> bool:
+	avg = (performance + competency + attitude) / 3
+	return not any((   # must be '((' and '))', not '(' and ')'
+		avg < 60,
+		attitude < 40,
+		competency < 60 and attitude < 60
+	))
+```
+
+```python
+>>> x, y = 10, 12
+>>> all([x % 3 == 0, y % 2 == 0])
+False
+>>> any([x % 3 == 0, y % 2 == 0])
+True
+```
+
+## 4. 기타
+
+* 가독성 향상을 위해 **조건을 집합처럼 사용** 하는 것이 좋다.
+
+```python
+>>> eval_metric = 'accuracy'
+>>> if eval_metric in {'accuracy', 'precision', 'recall', 'f1', 'auroc', 'prauc'}:
+	print(f'{eval_metric} is a valid metric.')
+
+	
+accuracy is a valid metric.
+```
+
