@@ -318,3 +318,9 @@ Traceback (most recent call last):
     square(num=5)
 TypeError: square() got some positional-only arguments passed as keyword arguments: 'num'
 ```
+
+* 제너레이터는 **소모성 (한 번 사용하면 없어짐)** 이다.
+  * 즉, 한번 순회를 완료한 후에는 **재활용 불가하며, 필요 시 제너레이터를 새로 생성** 해야 한다. 
+* 제너레이터가 Pythonic 한 이유는 다음과 같다.
+  * **Lazy Evaluation (지연 평가)** - 필요할 때만 값 생성, 메모리 및 성능 효율 좋음 **(불필요한 낭비 최소화)**
+  * 이로 인해, 데이터 크기 예측이 불가능하며 최대 무한대 크기인 경우도 처리 가능
