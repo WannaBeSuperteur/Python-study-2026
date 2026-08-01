@@ -9,6 +9,10 @@
   * [2-1. 데이터 클래스와의 공통점/차이점](#2-1-데이터-클래스와의-공통점차이점)
 * [3. 모듈/패키지 구조 설계](#3-모듈패키지-구조-설계)
 * [4. 예외 처리 관련](#4-예외-처리-관련)
+* [5. 테스트 코드 작성 관련](#5-테스트-코드-작성-관련)
+  * [5-1. Fixture (픽스처)](#5-1-fixture-픽스처)
+  * [5-2. 케이스 표 + subTest](#5-2-케이스-표--subtest)
+  * [5-3. 단언 (Assertion) 관련 메서드](#5-3-단언-assertion-관련-메서드)
 
 ## 1. 데이터 클래스 (dataclass) 관련
 
@@ -200,3 +204,150 @@ CustomError: error: division by zero (수식: 15 / 0)
   * **오류 로그 가독성** 향상
 * 예외는 **프로그램의 흐름을 안전하고 예측 가능하게 만드는 도구** 이므로 중요하다.
 
+## 5. 테스트 코드 작성 관련
+
+### 5-1. Fixture (픽스처)
+
+**픽스처 (Fixture)** 는 테스트 전 setup, 테스트 후 teardown (정리) 을 자동화하는 구조이다.
+
+* 이를 통해 **테스트마다 같은 준비 코드, 정리 코드를 반복하지 않아도** 된다.
+* 결과적으로 **가독성 향상, 안전성 보장 (teardown 에 의한)** 이 이루어진다.
+* Fixture의 함수
+
+| 함수               | 설명                       |
+|------------------|--------------------------|
+| ```setup()```    | 각 테스트의 **실행 직전** 에 자동 호출 |
+| ```tearDown()``` | 각 테스트의 **실행 직후** 에 자동 호출 |
+
+```python
+>>> def add_three(a, b, c):
+	return a + b + c
+
+>>> import unittest
+>>> class TestCalcWithFixture(unittest.TestCase):
+	def setUp(self):
+		print('setup')
+		self.a = 5
+		self.b = 8
+		self.c = 10
+		print(f'setup finished: a={self.a}, b={self.b}, c={self.c}')
+	def tearDown(self):
+		print('teardown')
+	def test_int(self):
+		result = add_three(self.a, self.b, self.c)
+		self.assertEqual(result, 23)
+	def test_float(self):
+		result = add_three(self.a / 2.0, self.b / 2.0, self.c / 2.0)
+		self.assertEqual(result, 11.5)
+	def test_str(self):
+		result = add_three(str(self.a), str(self.b), str(self.c))
+		self.assertEqual(result, '5810')
+
+		
+>>> unittest.main()
+setup
+setup finished: a=5, b=8, c=10
+teardown
+.setup
+setup finished: a=5, b=8, c=10
+teardown
+.setup
+setup finished: a=5, b=8, c=10
+teardown
+.
+----------------------------------------------------------------------
+Ran 3 tests in 0.216s
+
+OK
+```
+
+### 5-2. 케이스 표 + subTest
+
+* 문제점
+  * 여러 가지 케이스를 한번에 테스트할 때, **테스트 케이스마다 assertEqual 을 넣으면 코드가 지저분해진다.**
+* 해결 방법
+  * 다음과 같이 **케이스 표 + subTest** 를 이용한다.
+  * 장점은 **코드 간결화, 테스트 결과 가독성 향상, 편리한 유지보수 (리스트에 한 줄 추가로 테스트 케이스 1개 추가)** 이다.
+
+| 구분      | 설명                          |
+|---------|-----------------------------|
+| 케이스 표   | 입력과 기대값을 리스트에 저장, 반복문으로 처리  |
+| subTest | 반복문을 돌리면서 **실패한 개별 입력을 표시** |
+
+```python
+>>> import unittest
+>>> def add_three(a, b, c):
+	return a + b + c
+
+>>> class TestCalcSubTest(unittest.TestCase):
+	def test_add_three_cases(self):
+		cases = [
+			(5, 8, 10, 23),
+			(2.5, 4.0, 5.0, 11.5),
+			(1.25, 3.75, 4.5, 9.5),
+			('a', 'b', 'c', 'abc'),
+			('d', 'e', 'f', 'def')
+		]
+		for a, b, c, expected in cases:
+			with self.subTest(a=a, b=b, c=c):
+				self.assertEqual(add_three(a, b, c), expected)
+
+				
+>>> unittest.main()
+```
+
+```python
+>>> def div_three(a, b, c):
+	return (a + b) / c
+
+>>> class TestCalcSubTest2(unittest.TestCase):
+	def test_div_three_cases(self):
+		cases = [
+			(5, 7, 3, 4.0),
+			(12, 16, 4, 7.0),
+			(1, 1, 8, 0.25),
+			(4, 6, 0, 10.0),
+			(2, 3, 6, 0.833),
+			(2, 4, 4, 1.5)
+		]
+		for a, b, c, expected in cases:
+			with self.subTest(a=a, b=b, c=c):
+				self.assertEqual(div_three(a, b, c), expected)
+
+				
+>>> unittest.main()
+.
+======================================================================
+ERROR: test_div_three_cases (__main__.TestCalcSubTest2) (a=4, b=6, c=0)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<pyshell#24>", line 13, in test_div_three_cases
+  File "<pyshell#22>", line 2, in div_three
+ZeroDivisionError: division by zero
+
+======================================================================
+FAIL: test_div_three_cases (__main__.TestCalcSubTest2) (a=2, b=3, c=6)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<pyshell#24>", line 13, in test_div_three_cases
+AssertionError: 0.8333333333333334 != 0.833
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.009s
+
+FAILED (failures=1, errors=1)
+```
+
+### 5-3. 단언 (Assertion) 관련 메서드
+
+* Assertion 관련 메서드는 다음과 같다.
+
+| 메서드                           | 설명                                                               |
+|-------------------------------|------------------------------------------------------------------|
+| ```assertEqual(a, b)```       | 값이 서로 **정확히** 동일한지 판단                                            |
+| ```assertAlmostEqual(a, b)``` | 값이 서로 **거의 동일한지**<br>(```float``` 계산 테스트에서는 **부동소수점 오차** 때문에 필요) |
+| ```assertTrue(x)```           | 조건이 참인지 판단                                                       |
+| ```assertFalse(x)```          | 조건이 거짓인지 판단                                                      |
+| ```assertRaises(Exception)``` | 예외/오류 ```Exception``` 발생 여부 판단                                   |
+
+* ```assertAlmostEqual(a, b)``` 대신 ```assertTrue(math.isclise(...))``` 를 사용할 수 있다.
