@@ -6,3 +6,4 @@
 
 * [Part 1. 파이썬 기초 다지기](01_Python_Basics.md)
 * [Part 2. 파이썬답게 생각하기](02_Think_Pythonic.md)
+* [Part 3. 구조화와 재사용](03_Structure_and_Reuse.md)
