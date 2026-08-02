@@ -316,8 +316,118 @@ match (value)
 * 해결 방법
   * **제너레이터 파이프라인** 이용 (파일 처리의 각 단계를 ```yield``` 를 이용한 반환으로 변경)
   * ```ExitStack``` 을 통해 파일을 한번에 관리
+* 코드 구현 파일
+  * [04_example.py](04_example.py)
+  * [04_example.txt](04_example.txt)
+
+```python
+# ======== NON-PYTHONIC CODE ========
+
+def compute_final_score(path: Path, show_filter: list[str]) -> int:
+    print("==== Computing Final Score ====")
+    score = 0
+
+    try:
+        f = path.open("r", encoding="utf-8")
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            log_type = line.split(']')[0].split('[')[-1]
+
+            if log_type in show_filter:
+                json_data = json.loads(' '.join(line.split(' ')[1:]))
+                score_value = json_data.get('score', 0)
+                score = log_type_to_score[log_type](score, score_value)
+                print(f"score updated: {score}")
+
+                if score < 0:
+                    print("You are fired!")
+                    return score
+    finally:
+        if f:
+            f.close()
+
+    return score
+```
+
+```python
+# ======== PYTHONIC CODE ========
+
+log_type_to_score: dict[str, Callable[[int, int], int]] = {
+    "INIT": lambda x, y: y,
+    "ADD": operator.add,  # lambda x, y: x + y 와 동일
+    "SUB": operator.sub,  # lambda x, y: x - y 와 동일
+}
 
 
+@dataclass(slots=True)
+class LogRecord:
+    log_type: str
+    json_data: dict
+
+
+@contextmanager
+def open_text_file(path: Path) -> Iterator[Iterable[str]]:
+    with path.open("r", encoding="utf-8") as f:
+        yield f
+
+
+def parse_lines(lines: Iterable[str]) -> Iterator[str]:
+    for raw_str in lines:
+        line = raw_str.strip()
+        if not line:
+            continue
+        yield line
+
+
+def filter_line_by_log_type(lines: Iterable[str], show_filter: list[str]) -> Iterator[LogRecord]:
+    for line in lines:
+        log_type = line.split(']')[0].split('[')[-1]
+
+        if log_type in show_filter:
+            json_data = json.loads(' '.join(line.split(' ')[1:]))
+            log_record = LogRecord(log_type=log_type, json_data=json_data)
+            yield log_record
+
+
+def get_updated_score(records: Iterable[LogRecord], current_score: int) -> Iterator[int]:
+    for record in records:
+        score_value = record.json_data.get("score", 0)
+        current_score = log_type_to_score[record.log_type](current_score, score_value)
+        print(f"score updated: {current_score}")
+        yield current_score
+
+
+def compute_final_score_pythonic(path: Path, show_filter: list[str]) -> Iterator[int]:
+    print("==== Computing Final Score (Pythonic) ====")
+    current_score = 0
+
+    with open_text_file(path) as lines:
+        parsed_lines = parse_lines(lines)
+        log_records = filter_line_by_log_type(parsed_lines, show_filter)
+
+        for new_score in get_updated_score(log_records, current_score):
+            yield new_score
+
+            if new_score < 0:
+                print("You are fired!")
+                return
+```
+
+* 실행 결과
+
+```
+==== Computing Final Score (Pythonic) ====
+score updated: 10000
+score updated: 10250
+score updated: 8750
+score updated: 2750
+score updated: 1250
+score updated: 1750
+score updated: 4250
+4250
+```
 
 ## 7. 기타
 
