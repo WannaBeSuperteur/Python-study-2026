@@ -8,3 +8,4 @@
 * [Part 2. 파이썬답게 생각하기](02_Think_Pythonic.md)
 * [Part 3. 구조화와 재사용](03_Structure_and_Reuse.md)
 * [Part 4. 리팩토링 실습](04_Refactoring_Practice.md)
+* [Part 5. 실전 파이써닉 개발자 되기](05_Become_Pythonic_Developer.md)
