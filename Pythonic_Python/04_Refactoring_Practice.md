@@ -6,6 +6,8 @@
 * [2. 튜플 언패킹](#2-튜플-언패킹)
 * [3. 중복된 로직의 제거](#3-중복된-로직의-제거)
 * [4. 조건문 블록 단순화](#4-조건문-블록-단순화)
+* [5. ```match-case``` 문을 사용한 리팩토링](#5-match-case-문을-사용한-리팩토링)
+* [6. 기타](#6-기타)
 
 ## 1. 컴프리헨션/제너레이터 표현식 적용 리팩토링
 
@@ -219,3 +221,92 @@ rainbow8 (2 개월 재직)
 >>> aggr_map('avg', [3, 2, 5])
 3.3333333333333335
 ```
+
+* 함수를 dictionary 형태로 매핑하기
+
+```python
+>>> import os
+>>> def cmd_listdir() -> str:
+	return str(os.listdir())
+
+>>> def cmd_test() -> str:
+	return "test successful"
+
+>>> def cmd_version() -> str:
+	return "v1.2.6"
+
+>>> COMMANDS: dict[str, Callable[[], str]] = {
+	"listdir": cmd_listdir,
+	"test": cmd_test,
+	"version": cmd_version
+}
+>>> def dispatch_command(cmd: str) -> str:
+	return COMMANDS.get(cmd, lambda: f"unknown command: {cmd}")()
+```
+
+```python
+>>> dispatch_command("listdir")
+"['career', 'dddd', 'DLLs', 'Doc', 'include', 'Lib', 'libs', 'LICENSE.txt', 'NEWS.txt', 'python.exe', 'python3.dll', 'python38.dll', 'pythonw.exe', 'Scripts', 'share', 'tcl', 'Tools', 'vcruntime140.dll', 'vcruntime140_1.dll']"
+>>> dispatch_command("test")
+'test successful'
+>>> dispatch_command("version")
+'v1.2.6'
+```
+
+* 팩토리 패턴
+
+```python
+>>> from dataclasses import dataclass
+>>> @dataclass
+class Hero:
+	kind: str
+	name: str
+	gender: Literal["male", "female"]
+	height: float
+
+	
+>>> def make_superman(height: float) -> Hero:
+	return Hero("person", "Superman", "male", height)
+
+>>> def make_candy_girl(name: str, height: float) -> Hero:
+	return Hero("candy", name, "female", height)
+
+>>> FACTORY: dict[str, Callable[..., Hero]] = {
+	"superman": make_superman,
+	"candy_girl": make_candy_girl,
+}
+>>> def create_hero(kind: str, *args) -> Hero:
+	if kind not in FACTORY:
+		raise ValueError("this kind of hero is not supported")
+	return FACTORY[kind](*args)
+```
+
+```python
+>>> s = create_hero("superman", 4.45)
+>>> print(s)
+Hero(kind='person', name='Superman', gender='male', height=4.45)
+>>> c = create_hero("candy_girl", "Lumi", 0.15)
+>>> print(c)
+Hero(kind='candy', name='Lumi', gender='female', height=0.15)
+```
+
+## 5. ```match-case``` 문을 사용한 리팩토링
+
+```match-case``` 는 **Python 3.10+** 에서 제공하는 문법으로, **튜플, 딕셔너리, 클래스 구조 분기** 에 유용하다.
+
+* 문법은 다음과 같다.
+  * ```value``` 가 각각의 ```condition_{c}``` 을 만족시키면 해당 부분이 실행된다.
+
+```python
+match (value)
+    case (condition_1):  # value 가 condition 인 경우
+        blahblah ...
+    case (condition_2):
+        blahblah ...
+...
+```
+
+## 6. 기타
+
+* FSM (상태 기계) 패턴의 경우에는, **```if-elif-else``` 구조 대신 전이 테이블을 이용한다.**
+  * 이때 전이 테이블은 ```dict[tuple[State, Event], State]``` 형태로 만들 수 있다.
