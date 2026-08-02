@@ -1,0 +1,15 @@
+[INIT] {"score": 10000}
+[ADD] {"score": 250, "reason": "image classification model successful implement"}
+[COMMENT] {"comment": "Wow, amazing!", "user": "Bob"}
+[COMMENT] {"comment": "You did a good job!", "user": "Firebat Kim"}
+[LOG] {"log": "training start ..."}
+[LOG] {"log": "epoch 1, val loss = 0.0997, val acc = 0.7924"}
+[LOG] {"log": "epoch 2, val loss = 0.0722, val acc = 0.8537"}
+[SUB] {"score": 1500, "reason": "Airflow DAG Error"}
+[COMMENT] {"comment": "🚨", "user": "Bob"}
+[SUB] {"score": 6000, "reason": "Delay schedule without discussing with team lead"}
+[SUB] {"score": 1500, "reason": "Not commenting model distribution log"}
+[LOG] {"log": "epoch 3, val loss = 0.0546, val acc = 0.8900"}
+[ADD] {"score": 500, "reason": "Studying Python Clean Coding"}
+[ADD] {"score": 2500, "reason": "Studying Pythonic Python"}
+[COMMENT] {"comment": "test", "user": "admin"}
