@@ -17,6 +17,7 @@ log_type_to_score: dict[str, Callable[[int, int], int]] = {
 
 # ======== NON-PYTHONIC CODE ========
 
+
 def compute_final_score(path: Path, show_filter: list[str]) -> int:
     print("==== Computing Final Score ====")
     score = 0
@@ -27,11 +28,11 @@ def compute_final_score(path: Path, show_filter: list[str]) -> int:
             line = line.strip()
             if not line:
                 continue
-            log_type = line.split(']')[0].split('[')[-1]
+            log_type = line.split("]")[0].split("[")[-1]
 
             if log_type in show_filter:
-                json_data = json.loads(' '.join(line.split(' ')[1:]))
-                score_value = json_data.get('score', 0)
+                json_data = json.loads(" ".join(line.split(" ")[1:]))
+                score_value = json_data.get("score", 0)
                 score = log_type_to_score[log_type](score, score_value)
                 print(f"score updated: {score}")
 
@@ -46,6 +47,7 @@ def compute_final_score(path: Path, show_filter: list[str]) -> int:
 
 
 # ======== PYTHONIC CODE ========
+
 
 @dataclass(slots=True)
 class LogRecord:
@@ -67,17 +69,21 @@ def parse_lines(lines: Iterable[str]) -> Iterator[str]:
         yield line
 
 
-def filter_line_by_log_type(lines: Iterable[str], show_filter: list[str]) -> Iterator[LogRecord]:
+def filter_line_by_log_type(
+    lines: Iterable[str], show_filter: list[str]
+) -> Iterator[LogRecord]:
     for line in lines:
-        log_type = line.split(']')[0].split('[')[-1]
+        log_type = line.split("]")[0].split("[")[-1]
 
         if log_type in show_filter:
-            json_data = json.loads(' '.join(line.split(' ')[1:]))
+            json_data = json.loads(" ".join(line.split(" ")[1:]))
             log_record = LogRecord(log_type=log_type, json_data=json_data)
             yield log_record
 
 
-def get_updated_score(records: Iterable[LogRecord], current_score: int) -> Iterator[int]:
+def get_updated_score(
+    records: Iterable[LogRecord], current_score: int
+) -> Iterator[int]:
     for record in records:
         score_value = record.json_data.get("score", 0)
         current_score = log_type_to_score[record.log_type](current_score, score_value)
@@ -101,7 +107,7 @@ def compute_final_score_pythonic(path: Path, show_filter: list[str]) -> Iterator
                 return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     path = Path("04_example.txt")
     show_filter = ["INIT", "ADD", "SUB"]
 

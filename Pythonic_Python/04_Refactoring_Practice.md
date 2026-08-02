@@ -8,7 +8,8 @@
 * [4. 조건문 블록 단순화](#4-조건문-블록-단순화)
 * [5. ```match-case``` 문을 사용한 리팩토링](#5-match-case-문을-사용한-리팩토링)
 * [6. 긴 함수의 분리 (제너레이터, 컨텍스트 매니저)](#6-긴-함수의-분리-제너레이터-컨텍스트-매니저)
-* [7. 기타](#7-기타)
+* [7. 코드 스타일링 (PEP8, black, flake8)](#7-코드-스타일링-pep8-black-flake8)
+* [8. 기타](#8-기타)
 
 ## 1. 컴프리헨션/제너레이터 표현식 적용 리팩토링
 
@@ -429,7 +430,45 @@ score updated: 4250
 4250
 ```
 
-## 7. 기타
+## 7. 코드 스타일링 (PEP8, black, flake8)
+
+* [PEP 8](../PEP8) 의 핵심 규칙은 다음과 같다.
+  * 모듈/함수/변수 이름은 ```lower_snake_case``` 형식으로 하고, 클래스 이름은 ```CapWords``` 형식으로 한다. 
+  * **줄 길이 (line length)** 를 적절한 값 이내로 한다. (79, 88, 100, 120 등)
+  * **공백 개수** (연산자 주변, ```,``` 뒤 1개)
+  * **import 순서** (표준 라이브러리 > 서드파티 라이브러리 > 로컬)
+    * 각 블럭 간 빈 줄 필수
+  * **문자열은 f-string 형식 사용**
+  * 함수는 **너무 길면 분리** 해야 함
+
+코드 스타일링 도구인 **black** 과 **flake8** 을 통해, **사람이 아닌 도구가 포맷을 결정** 하여 일관성을 확보할 수 있다.
+
+* 미사용 변수, import 실수 등은 **버그의 씨앗** 이다.
+
+| 구분     | 설명                            |
+|--------|-------------------------------|
+| black  | 공백, 들여쓰기, 줄바꿈, import 정렬 등 수정 |
+| flake8 | 나쁜 naming, 미사용 변수 등 품질 문제 수정  |
+
+* 예시
+
+```
+(base) PS D:\Python-study-2026> black Pythonic_Python/04_example.py
+reformatted Pythonic_Python\04_example.py
+
+All done! ✨ 🍰 ✨
+1 file reformatted.
+```
+
+```
+(base) PS D:\Python-study-2026> cd Pythonic_Python
+(base) PS D:\Python-study-2026\Pythonic_Python> flake8
+.\04_example.py:89:80: E501 line too long (86 > 79 characters)
+.\04_example.py:94:80: E501 line too long (86 > 79 characters)
+(base) PS D:\Python-study-2026\Pythonic_Python> 
+```
+
+## 8. 기타
 
 * FSM (상태 기계) 패턴의 경우에는, **```if-elif-else``` 구조 대신 전이 테이블을 이용한다.**
   * 이때 전이 테이블은 ```dict[tuple[State, Event], State]``` 형태로 만들 수 있다.
