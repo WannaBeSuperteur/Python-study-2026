@@ -5,6 +5,7 @@
   * [1-1. 중첩 컴프리헨션](#1-1-중첩-컴프리헨션)
 * [2. 튜플 언패킹](#2-튜플-언패킹)
 * [3. 중복된 로직의 제거](#3-중복된-로직의-제거)
+* [4. 조건문 블록 단순화](#4-조건문-블록-단순화)
 
 ## 1. 컴프리헨션/제너레이터 표현식 적용 리팩토링
 
@@ -180,3 +181,41 @@ rainbow8 (2 개월 재직)
 -0.33333333333333304
 ```
 
+## 4. 조건문 블록 단순화
+
+* 숫자 연산 블럭을 ```if-elif-else``` 구조에서 dict 를 이용하여 보다 단순화할 수 있다.
+* **Callable** 은 **함수에 대한 Type** 으로, 다음과 같이 구성된다.
+  * ```Callable[[arg1 type, arg2 type, ...], return type]``` 
+
+```python
+>>> from __future__ import annotations
+
+# NOT Pythonic
+>>> def aggr_if(op: str, xs: list[float]) -> float:
+	if op == 'sum':
+		return sum(xs)
+	elif op == 'avg':
+		return sum(xs) / len(xs)
+	elif op == 'cnt':
+		return len(xs)
+	elif op == 'maxmmin':
+		return max(xs) - min(xs)
+	else:
+		return None
+
+## Pythonic !!
+>>> from typing import Callable
+>>> def aggr_map(op: str, xs: list[float]) -> float:
+	ops: dict[str, Callable[[float], float]] = {
+		"sum": lambda xs: sum(xs),
+		"avg": lambda xs: sum(xs) / len(xs),
+		"cnt": lambda xs: len(xs),
+		"maxmmin": lambda xs: max(xs) - min(xs),
+	}
+	return ops.get(op, lambda *_: None)(xs)
+
+>>> aggr_if('avg', [3, 2, 5])
+3.3333333333333335
+>>> aggr_map('avg', [3, 2, 5])
+3.3333333333333335
+```
